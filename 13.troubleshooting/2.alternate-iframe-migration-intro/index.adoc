@@ -1,14 +1,13 @@
-= Alternate Iframe Migration - Intro
+= Alternate IFRAME Migration - Intro
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 == Introduction
 The migration method that we have covered in our course is the official `ngUpgrade` method which is advocated by the Angular team. But this is not the only way to migrate an AngularJS application.
 
 In fact, I have come up with my very own method to migrate an AngularJS application to Angular. This is known as the The Iframe Migration Method and you can read about its details in my https://codecraft.tv/blog/2017/09/07/angularjs-to-angular-using-iframes/[blog].
 
-I have also spoken about this method at Angular Connect in London, which is one of the largest Angular conferences in the world. If you are interested in listening to it, https://www.youtube.com/watch?v=JxDuEwLfeGc[here] is youtube link to my talk.
+I have also spoken about this method at Angular Connect in London, which is one of the largest Angular conferences in the world. If you are interested in listening to it, https://www.youtube.com/watch?v=JxDuEwLfeGc[here] is YouTube link to my talk.
 
 The source code for the demo application that I use for this migration strategy can be found https://github.com/jawache/alt-angularjs-migration-using-iframes-demo[here].
 

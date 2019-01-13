@@ -1,7 +1,6 @@
 = Cleanup the libs folder and deal with CSS
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 In this final lecture of our cleanup step, we will look at our `libs` folder and see how we can use `webpack` to efficiently manage our `.css` files.
 

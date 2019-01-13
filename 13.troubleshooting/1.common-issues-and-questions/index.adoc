@@ -1,12 +1,11 @@
 = Common Issues and Questions
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 == Lecture Objective
 In this lecture we will cover a few key troubleshooting issues and see how we can solve them during our migration from AngularJS to Angular.
 
-== $scope.$watch
+== `$scope.$watch`
 The first common issue that we will deal with is how to handle `$scope.$watch`, which allows our application to listen for `$scope` changes.
 
 I personally believe that extensive use of `$scope.$watch` can be a sign of poor architecture. However, it still should be addressed in our migration process as modern Angular does _not_ have this concept at all.
@@ -16,9 +15,9 @@ I used to work in a firm where we constantly had to deal with issues from a form
 
 To better understand the issues of this form, lets look at its architecture.
 
-[#img-component-diagram]
+[#img-component-diagram-1]
 .Architecture of the form
-image::46-img-001.png[]
+image::./images/46-img-001.png[]
 
 There were 3 controller levels as illustrated in Figure 1. The lowest level of control contained the form which used scope inheritance to read the required properties from the outer levels.
 
@@ -26,9 +25,9 @@ The properties itself were being set via asynchronous function calls, so you nev
 
 This behavior is illustrated in Figure 2, where setting a given property in the form would trigger a scope watch that would then proceed to set another property and so on.
 
-[#img-component-diagram]
+[#img-component-diagram-2]
 .Property setting
-image::46-img-002.png[]
+image::./images/46-img-002.png[]
 
 A side effect of this was that some of our test cases would sporadically fail. This was because of the asynchronous nature of some of the watchers and dependencies, and is a classic example of _chaos theory_.
 

@@ -1,7 +1,6 @@
 = Migrate Routing
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 We have now removed dual booting and converted our application to bootstrap in Angular. A side-effect of this is the AngularJS UI-Router is now redundant. In this lecture, we will see how to replace the AngularJS `UI-Router` with Angular Router.
 
@@ -124,7 +123,7 @@ The above configuration basically specifies which components to load for the cor
 
 Notice the root path with the `redirectTo` property. This special syntax redirects to the `list` path while injecting the `search` path into the `header` component.
 
-NOTE: We will not be discussing the routing configuration in detail as this is pretty standard Angular routing code. if you do need a refresher, check out my free https://codecraft.tv/courses/angular/[Angular course] which covers all of this in great detail.
+NOTE: We will not be discussing the routing configuration in detail as this is pretty standard Angular routing code. if you do need a refresher, check out my free https://codecraft.tv/courses/angular/routing/overview/[Angular course] which covers all of this in great detail.
 
 Next, to use the Angular Router in our application, we have to _provide_ the configuration (`app.routes.ts`) and the Angular `RouterModule` in our `NgModule` like so:
 

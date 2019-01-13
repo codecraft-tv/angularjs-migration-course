@@ -1,7 +1,6 @@
 = Deal with Upgraded Providers
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 The `ajs-upgraded-providers.ts` file contains AngularJS `providers` which we temporarily upgraded in our migration process to maintain compatibility with Angular entities. In this lecture, we will look at these upgraded providers and see how we can replace them with Angular friendly solutions, so that we can completely remove AngularJS from our application.
 

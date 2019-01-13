@@ -1,7 +1,6 @@
-= Alternate Iframe Migration - Method
+= Alternate IFRAME Migration - Code
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 == Lecture Objective
 In this lecture we will dive into our iframe Migration Strategy, take a look at some code, see how *Route Ownership* is managed and finally look at the concept of *Shared State*. So lets get started!
@@ -11,17 +10,17 @@ Lets assume you just followed my iframe Migration Strategy and migrated your Ang
 
 At this point, the route ownership of your application will remain entirely with your Angular application.
 
-[#img-component-diagram]
+[#img-component-diagram-1]
 .Route ownership at the start of the iframe Migration Strategy
-image::49-img-001.jpg[]
+image::./images/49-img-001.jpg[]
 
 Overtime, Angular starts taking over. We start migrating _one route at a time_, over from AngularJS to Angular. With each migration, the ownership of the corresponding route switches hands from AngularJS to Angular.
 
 Eventually, we will have migrated everything over to Angular. At this point, there is nothing more to be done; Just drop your AngularJS application entirely because your migration is now complete.
 
-[#img-component-diagram]
+[#img-component-diagram-2]
 .Route ownership at the completion of the iframe Migration Strategy
-image::49-img-002.jpg[]
+image::./images/49-img-002.jpg[]
 
 Lets rewind a bit. What exactly did I mean by, "Angular starts taking over"?
 
@@ -57,9 +56,9 @@ This is all good, but it also poses some interesting questions. Who owns the rou
 
 === Use case 1: AngularJS - AngularJS route management
 
-[#img-component-diagram]
+[#img-component-diagram-3]
 .Routing between AngularJS routes
-image::49-img-003.jpg[]
+image::./images/49-img-003.jpg[]
 
 This scenario is pretty straightforward. You are in an AngularJS context, trying to navigate into another `url` which is also in an AngularJS context.
 
@@ -67,9 +66,9 @@ There will be no communication between Angular and AngularJS and your AngularJS 
 
 === Use case 2: Angular - Angular route management
 
-[#img-component-diagram]
+[#img-component-diagram-4]
 .Routing between Angular routes
-image::49-img-004.jpg[]
+image::./images/49-img-004.jpg[]
 
 Again, the scenario  has no complexities involved. You are in an Angular context, trying to navigate into a URL in an Angular context.
 
@@ -77,9 +76,9 @@ There will be no communication between Angular and AngularJS and your Angular ro
 
 === Use case 3: Angular - AngularJS route management
 
-[#img-component-diagram]
+[#img-component-diagram-5]
 .Routing between Angular - AngularJS routes
-image::49-img-005.jpg[]
+image::./images/49-img-005.jpg[]
 
 You are now in an Angular context, looking to navigate to an AngularJS context. This is when the complexities arise. How do we transfer route management from outside of our *iframe* (from an Angular context) to the AngularJS framework within it?
 
@@ -136,9 +135,9 @@ export class IframeComponent implements OnInit {
 <3> Here we bypass Angular's URL sanitation which allows us to obtain display the complete URL for the requested page, which will then be loaded inside the iframe.
 
 === Use case 4: AngularJS - Angular route management
-[#img-component-diagram]
+[#img-component-diagram-6]
 .Routing between Angular - AngularJS routes
-image::49-img-006.jpg[]
+image::./images/49-img-006.jpg[]
 
 This is the exact mirror scenario of use case 3. We request a URL while in an AngularJS context, that requires us to navigate into an Angular context. Again, the complexities lie in switching frameworks; This time we need to get _out_ from our iframe into Angular's route management.
 

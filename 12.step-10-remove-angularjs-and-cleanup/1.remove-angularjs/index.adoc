@@ -1,7 +1,6 @@
 = Remove AngularJS
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 The objective of this step is to completely clean up our Angular application and finalize the migration. In this lecture we will go through our application code and remove any references we still have to AngularJS. So lets get started!
 

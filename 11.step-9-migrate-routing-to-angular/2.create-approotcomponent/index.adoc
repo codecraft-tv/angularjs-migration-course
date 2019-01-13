@@ -1,7 +1,6 @@
 = Create AppRootComponent
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 This is the largest step left in our migration process, in which we will migrate routing over from `UI-Router` to `Angular Router` and drop dual booting. We will do this in a single step that will span across a couple of lectures so lets get started!
 

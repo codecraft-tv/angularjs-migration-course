@@ -1,7 +1,6 @@
 = Use New Toaster Module
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 In this lecture we will see how we can replace the older AngularJS toaster module with a more modern, Angular version. So lets get started!
 
