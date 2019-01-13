@@ -1,5 +1,4 @@
-= The Application to be Migrated
-:imagesdir: images/
+= The application we are migrating
 
 In this lecture, we will briefly go through the application that we will be migrating from AngularJS to Angular.
 
@@ -9,7 +8,7 @@ The application we will be migrating (reference Figure 1)  is a contact applicat
 
 [#img-component-diagram]
 .Contacts application home
-image::5-img-001.png[]
+image::./images/5-img-001.png[]
 
 The application will have the following functionalities
 

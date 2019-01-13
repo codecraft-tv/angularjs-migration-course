@@ -1,19 +1,21 @@
+:toc:
 = Course Structure
 
 Welcome to the second lecture of the series! Before we get into the good stuff, let's have a quick look at how this course is structured.
 
 == Mental Model
 
-At the risk of sounding like a broken record, let me repeat myself. Migrating from AngularJS to Angular is going to be messy, hard work and your specific instance of migration is going to be vastly different from everyone elses.
+At the risk of sounding like a broken record, let me repeat myself. 
 
-But underlying all the chaos is a simple structure and a clear set of rules. If you have a good grasp of this, you will be able to see through the inherent complexities of migration which brings us to the first goal of this course:
+IMPORTANT: Migrating from AngularJS to Angular is going to be messy, hard work and your specific instance of migration is going to be vastly different from everyone elses.
 
-*To give you a mental model of the underlying structure and rules of your problem to guide you through the minefield of migration.*
+But underlying all the chaos is a simple structure and a clear set of rules. If you have a good grasp of this, you will be able to see through the inherent complexities of migration.
 
+The goal of this course is *just* to give you a mental model of the underlying structure and rules of migration, a mental model which you can use to think about your own migration process for your own application.
 
 == Plan
 
-A person without a plan is a person planning to fail. So what is the plan?
+A person without a plan is a person planning to fail. 
 
 In this section, I will teach you my strategy, the strategy that I advocate when migrating an AngularJS application. It is generic, applicable to any of your AngularJS migration projects and one that I have used with great success.
 

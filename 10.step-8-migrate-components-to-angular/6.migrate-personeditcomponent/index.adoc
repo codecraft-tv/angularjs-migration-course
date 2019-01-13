@@ -1,11 +1,10 @@
 = Migrate PersonEditComponent
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 In this final lecture for this section, we will be upgrading our `person-edit` component over to Angular, and then downgrading it to maintain compatibility in an AngularJS context. So lets get started!
 
-=== Converting our list component to Angular
+== Converting our list component to Angular
 
 The code for our `person-edit` component is contained in the `person-edit.component.ts` file which is shown below:
 
@@ -87,7 +86,7 @@ angular
 ----
 As usual, we will start off by converting this file into a class-based Angular implementation like we have done with our previous components.
 
-==== Creating the PersonCreateComponent class
+=== Creating the PersonCreateComponent class
 * Take the code from the `controller` property and move it to a separate `PersonEditComponent` class.
 
 * Manually inject the `ContactService`, `$state`, and the `$stateParams` using the `@Inject` decorator.
@@ -176,7 +175,7 @@ import { PersonEditComponent } from "./components/person-edit.component";
 ...
 ----
 
-=== The UI Router's $stateParams service
+== The UI Router's $stateParams service
 
 Like we did with the `$state` service, we will need to temporarily upgrade the UI-Router `$stateParams` service, so that it can be used within our Angular component.
 
@@ -228,7 +227,7 @@ import { toasterServiceProvider, uiRouterStateProvider } from "./ajs-upgraded-pr
 ...
 ----
 
-=== Downgrading the Search component
+== Downgrading the Search component
 To maintain compatibility, we will need to downgrade our `PersonEditComponent`. There's nothing new here, just follow the same procedure like we have done before.
 
 In `person-edit.component.ts`, import the `downgradeComponent` function like so:

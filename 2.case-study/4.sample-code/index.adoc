@@ -1,5 +1,5 @@
-= Code Management with Git
-:imagesdir: images/
+:toc:
+= Sample code for this course
 
 In this lecture we are going to take a look at how you can effectively use the `git` branches of the `angularjs-migration` repository, to keep track of the source code as we make our way through the migration process.
 

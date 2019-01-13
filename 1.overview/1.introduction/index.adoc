@@ -10,12 +10,14 @@ This course can be your guide. I say _can_ because it is up to you to transform 
 
 A few tips to help you reap the full benefits of this course:
 
-- Don't cherry pick your way through the lectures. If you are in, you are all in. Follow the lectures from A to Z.
 
-- Problems are part and parcel of the package. If you are stuck, do your research. Google is your friend. 
+[TIP]
+====
+* Don't cherry pick your way through the lectures. If you are in, you are all in. Follow the lectures from A to Z.
+* Problems are part and parcel of the package. If you are stuck, do your research. Google is your friend. 
+* Did the research but still haven't got the answers? Post a question in a site like StackOverflow forum, spark a discussion!
+* Make sure to add enough information along with your questions. Remember, there is no such thing as too much information.
+====
 
-- Did the research but still haven't got the answers? Post a question in a site like StackOverflow forum, spark a discussion!
-
-- Make sure to add enough information along with your questions. Remember, there is no such thing as too much information.
 
 Well then.. let's get started!

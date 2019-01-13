@@ -1,7 +1,6 @@
 = Upgrade Toaster Module
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 During the migration of the `ContactService` entity from AngularJS to Angular, we made the decision to ignore the `toaster` module and handle its migration separately. In this lecture we are going to figure out how to add this back in to our application. So lets get started!
 
@@ -24,7 +23,7 @@ We have a pure Angular `Resource` entity and a downgraded `Service` entity that 
 
 [#img-component-diagram]
 .Contacts application component diagram
-image::30-img-001.jpg[]
+image::./images/30-img-001.jpg[]
 
 This will allow our `Resource` entity (still in AngularJS) to work inside Angular!
 
@@ -56,7 +55,7 @@ export const toasterServiceProvider = {
 
 The purpose of the above code is to make our AngularJS `toaster` service available to our modern Angular Dependency Injection Framework.
 
-<1> The `InjectionToken` creates a token that can be used in a `DI` provider. More information on this can be found in my https://codecraft.tv/courses/angular/dependency-injection-and-providers/tokens/[Angular course].
+<1> The `InjectionToken` creates a token that can be used in a `DI` provider. More information on this can be found in my https://codecraft.tv/courses/angular/dependency-injection-and-providers/tokens/[Angular Course].
 
 <2> The `toasterServiceFactory` returns the AngularJS toaster service from the AngularJS Injection Framework.
 

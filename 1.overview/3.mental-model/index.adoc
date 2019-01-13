@@ -1,3 +1,4 @@
+:toc:
 = Mental Model
 
 In this lecture we are going to cover a way of thinking or reasoning about the AngularJS migration process. We call this a _Mental Model_ and it is essential that you understand this concept to successfully migrate your AngularJS application.
@@ -10,25 +11,34 @@ AngularJS:: refers to the legacy Angular framework. Anything versioned 1.x is An
 
 Angular:: refers to the modern Angular framework. Anything versioned 2+ is Angular.
 
-Now, lets take a look at some of the differences in terminology across AngularJS and modern Angular.
-[width="100%",options="header"]
-|====================
-|What was it called in AngularJS?  |What is it called in Angular?
-|Filters|  Pipes
-|Controllers  |  Components
-|Directives *+* HTML  |  Components
-|Directives *-* HTML  |  Directives
-|Services/Factories  |  Services
-|====================
-
 Entities::
 An Entity is any single thing in an application. This could be a filter, a pipe, a controller, a component or a service.
+
+=== Name Changes
+Now, lets take a look at some of the differences in terminology across AngularJS and modern Angular.
+
+_What was it called in AngularJS?  -> What is it called in Angular_
+
+Filters -> Pipes
+
+Controllers  -> Components
+
+Directives *+* HTML ->  Components
+
+Directives *-* HTML  ->  Directives
+
+Services/Factories  ->  Services
+
+
 
 === Color Coding Schemes
 We will be using the following color coding scheme to distinguish between the legacy and modern Angular entities.
 
-* Angular is [blue]#BLUE#
-* AngularJS is [red]#RED#
+++++
+Angular is <span style="color:blue">BLUE</span><br/>
+AngularJS is <span style="color:red">RED</span>
+++++
+
 
 == Migration Concepts
 [#img-component-diagram]
@@ -45,7 +55,7 @@ NOTE: The concept of Zones in Angular eliminates the need for $scope.$apply(...)
 === Concept 2: Interoperability
 Although entities written in AngularJS and Angular work together in a hybrid application, they do not do this _directly_. Instead, we have to either *Upgrade* (applicable for AngularJS entities) or *Downgrade* (applicable for Angular entities) to ensure interoperability.
 
-[#img-component-diagram]
+[#img-component-diagram-1]
 .Interoperability of upgraded (AngularJS) and downgraded (Angular) components
 image::./images/3-img-002.jpg[]
 
@@ -57,9 +67,9 @@ TIP: Dependency injection still works! You can have the _same instance_ of a dow
 === Concept 3: Who's in control?
 Consider an AngularJS application with the following HTML hierarchy.
 
-[#img-component-diagram]
+[#img-component-diagram-2]
 .HTML hierarchy
-image::./images/./images/3-img-003.jpg[]
+image::./images/3-img-003.jpg[]
 
 Now, if we migrate the ``<card>`` entity to `Angular`, we will need to downgrade it to use it within the `AngularJS` ``<body>`` entity. Similarly, we will need to upgrade the `AngularJS` ``<spinner>`` entity to use it within the `Angular` ``<card>`` entity.
 
@@ -68,9 +78,9 @@ TIP: AngularJS is always bootstrapped first and owns the bottom most view. This 
 == The Plague
 I like to think of the migration process as an infection or disease, gradually taking over an AngularJS application. The "disease" in this case is of course, Angular. Consider the application shown in Figure 4.
 
-[#img-component-diagram]
+[#img-component-diagram-3]
 .Application component diagram with downgraded Resource entity
-image::./images/./images/3-img-004.jpg[]
+image::./images/3-img-004.jpg[]
 
 1. We can first "infect" the Resource entity with Angular. To maintain compatibility, we will need to downgrade the Resource entity.
 
@@ -78,7 +88,7 @@ TIP: Start at the leaves and always favor downgrading Angular components over up
 
 2. Next, we convert the Service entity to Angular while downgrading it to maintain compatibility with it's child entities.
 
-[#img-component-diagram]
+[#img-component-diagram-4]
 .Application component diagram with downgraded Service entity
 image::./images/3-img-005.jpg[]
 
@@ -87,7 +97,6 @@ NOTE: The downgraded Resource entity can now be reverted back to Angular as it's
 3. This process is then repeated throughout the application (from leaf upwards) until all components are migrated to Angular.
 
 === Caveats
-
 * `Filters` in `AngularJS` cannot be migrated and will have to be re-written as `Pipes` during the migration process.
 * Some directives (those without templates) will need to be re-written as `Angular` `Directives`.
 

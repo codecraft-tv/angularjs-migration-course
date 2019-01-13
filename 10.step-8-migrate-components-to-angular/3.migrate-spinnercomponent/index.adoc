@@ -1,21 +1,20 @@
 = Migrate SpinnerComponent
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 In this lecture we are going to take a look at the `spinner` component, understand its usage in our application and finally implement it in Angular. So lets get started!
 
-=== What is the Spinner?
+== What is the Spinner?
 The `spinner` component is exactly what it sounds like! It is a circular activity indicator with the text "Loading..." that is displayed when data is requested or loaded by the application. (See Figure 1 for reference)
 
-[#img-component-diagram]
+[#img-component-diagram-1]
 .Spinner activity indicator
-image::34-img-001.png[]
+image::./images/34-img-001.png[]
 
-=== The AngularJS implementation
+== The AngularJS implementation
 Now that we know what the `spinner` is, lets see how it has been implemented in our AngularJS Contacts application.
 
-==== Implementation
+=== Implementation
 The code for our `spinner` component (`cc-spinner`) resides in the `spinner.component.ts` file:
 
 .spinner.component.ts
@@ -48,7 +47,7 @@ If you observe this code closely, you may notice that our implementation actuall
 
 The `us-spinner` directive (https://github.com/urish/angular-spinner[source]) is based on a vanilla javascript spinning activity indicator called `spin.js`. We will see how we can use this same library (`spin.js`) to re-implement the `spinner` component in Angular.
 
-==== Usage
+=== Usage
 The `spinner` component is used in the `person-list.component.ts` file like so:
 
 [source, javascript]
@@ -58,10 +57,10 @@ The `spinner` component is used in the `person-list.component.ts` file like so:
 
 The component displays a message (passed in via the `message` attribute) based on the state of the `is-loading` attribute.
 
-=== Converting our Spinner to Angular
+== Converting our Spinner to Angular
 Lets go ahead and convert the `spinner.component.ts` file into a class-based Angular implementation like we have done with our previous components.
 
-==== Creating the SpinnerComponent class
+=== Creating the SpinnerComponent class
 * Take the code from the `controller` property and move it to a separate `SpinnerComponent` class.
 
 * Include the `bindings` properties, `isLoading` and `message` as public variables using the `@Input` decorator. These will be input properties to our spinner component.
@@ -126,7 +125,7 @@ import { SpinnerComponent } from "./components/spinner.component";
 ...
 ----
 
-==== Modifying the template code
+=== Modifying the template code
 Consider the template code of our `spinner` component:
 
 [source, html]
@@ -172,9 +171,10 @@ message
 </div>
 ----
 
-==== Implementing the Spinner
+=== Implementing the Spinner
 
-===== @ViewChild decorator
+==== @ViewChild decorator
+
 Now that we have the `spinnerEl` reference to attach our `spinner` component to, lets link this with our `SpinnerComponent`. We can do this using the `@ViewChild` decorator in Angular that allows us to access `DOM` elements like so:
 
 [source, javascript]
@@ -194,7 +194,7 @@ export class SpinnerComponent {
 
 The private `spinnerEl` variable will now reference the `span` element with the `#spinnerEl` reference variable.
 
-===== Adding spin.js
+==== Adding spin.js
 Now we need to add the `spin.js` library to our application, which will allow us to implement the required spinner functionality. Execute the following command to install and add the library to our `package.json` file:
 ----
 npm install spin.js --save
@@ -206,7 +206,7 @@ To use this in our `spinner.component.ts` file, add the following import:
 import {Spinner} from 'spin.js';
 ----
 
-===== Implementation
+==== Implementation
 The spinner functionality can be easily implemented using our `spin.js` library like so:
 
 [source, javascript]
@@ -239,7 +239,7 @@ export class SpinnerComponent implements AfterViewInit {
 ...
 ----
 
-=== Downgrading our component
+== Downgrading our component
 For our `spinner` component to work inside an AngularJS entity, we need to downgrade it. To downgrade, add the following imports and modify the component registration code in `spinner.component.ts` like so:
 
 .Required imports

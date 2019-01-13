@@ -1,24 +1,22 @@
 = Migrate SearchComponent
 :toc:
-:toclevels: 5
-:imagesdir: images/
 
 In this section we are going to work on migrating our AngularJS components to Angular, and discuss how to deal with things like filters and third party libraries used within our components during the migration process. So lets get started!
 
-==== Component visualization
+== Component visualization
 With the migration of the `Resource` and `Service` entities to Angular, our application component diagram now looks like this:
 
-[#img-component-diagram]
+[#img-component-diagram-1]
 .Current contacts application component diagram
-image::32-img-001.jpg[]
+image::./images/32-img-001.jpg[]
 
 The next step is to migrate our components. We will start by migrating (and downgrading to maintain compatibility!) our `Search` component so that our application component diagram will look like so:
 
-[#img-component-diagram]
+[#img-component-diagram-2]
 .Contacts application component diagram after the Search component migration
-image::32-img-002.jpg[]
+image::./images/32-img-002.jpg[]
 
-==== Search component declaration
+== Search component declaration
 
 The `Search` component code is contained within the `search.component.ts` file. Lets start by adding the following code to `search.component.ts`. This will form the basis of our component class.
 
@@ -55,7 +53,7 @@ Next, create the `declarations` and `entryComponents` properties in the `NgModul
 
 NOTE: You only need to add a component to the `entryComponents` property if you plan to downgrade it.
 
-==== The @Component decorator
+== The @Component decorator
 The `@Component` decorator marks a class as an Angular component and provides configuration meta-data that determines how the component should be processed, instantiated, and used at runtime.
 
 This decorator takes two properties, `selector` and `template` which we have already defined for our `SearchComponent` during the Component'ification step previously. Copy that same code and add the `@Component` decorator to our `SearchComponent` class like so:
@@ -110,7 +108,7 @@ export class SearchComponent {
 ----
 NOTE: Make sure to import the `Component` using `import { Component } from "@angular/core";`
 
-==== Injecting ContactService
+== Injecting ContactService
 To inject the `ContactService` into our components, add the following imports:
 [source, javascript]
 ----
@@ -130,7 +128,7 @@ constructor(@Inject(ContactService) private contacts: ContactService) {
 
 NOTE: At this point, we can go ahead and remove the older `SearchComponent` initialization code in our `search.component.ts` file
 
-==== Model driven forms
+== Model driven forms
 
 Consider the template code in our `SearchComponent` decorator. It contains a template-driven AngularJS form that uses AngularJS directives (such as `ng-model-options`) for functionality. Lets see how we can replace this in favor of the more modern, model-driven Angular forms.
 
@@ -222,7 +220,7 @@ To link the individual form controls (`search`, `sorting`, `ordering`) to the fo
 </div>
 ----
 
-=== Downgrading the Search component
+== Downgrading the Search component
 To maintain compatibility, we will need to downgrade our `SearchComponent`. The downgrade syntax for a component is similar to that of a `Service` which we saw in the previous section.
 
 Import the `downgradeComponent` function like so:
@@ -246,7 +244,7 @@ angular
 Now if you build and run your application, you may observe that all the functionality works as expected, except for the `Search` component. This is because even though we have re-written our component in Angular, we are yet to implement its functionality, which is what we will do next!
 
 
-=== Hooking things up
+== Hooking things up
 Our AngularJS template-driven form used the `ng-model-options` directive to add debouncing functionality to our `Search` component. Although there is no direct analogy in Angular, we will implement the same functionality using the `rxjs` library and the `debounce` operator.
 
 Add the following `ngOnInit` function  (and the required imports) to our `SearchComponent` class:

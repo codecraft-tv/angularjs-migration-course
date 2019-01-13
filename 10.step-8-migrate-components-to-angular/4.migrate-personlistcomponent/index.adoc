@@ -1,15 +1,14 @@
 = Migrate PersonListComponent
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 With the migration of the `spinner` component, we have now migrated all the dependencies of the `list` component, which we can now migrate to Angular as well. So lets get started!
 
-==== Component visualization
+== Component visualization
 
 [#img-component-diagram]
 .Current contacts application component diagram
-image::35-img-001.jpg[]
+image::./images/35-img-001.jpg[]
 
 Figure 1 shows a visualization of our application's current component state. Since we have migrated both dependencies of the `list` component to Angular, we can now go ahead and convert the `list` component itself to Angular.
 
@@ -17,9 +16,9 @@ The expected component visualization for our application after the migration of 
 
 [#img-component-diagram]
 .Expected contacts application component diagram
-image::35-img-002.jpg[]
+image::./images/35-img-002.jpg[]
 
-=== Converting our list component to Angular
+== Converting our list component to Angular
 
 The code for our `list` component resides in the `person-list.component.ts` file:
 
@@ -72,7 +71,7 @@ angular
 ----
 Lets start by converting this file into a class-based Angular implementation like we have done with our previous components.
 
-==== Creating the PersonListComponent class
+=== Creating the PersonListComponent class
 * Take the code from the `controller` property and move it to a separate `PersonListComponent` class.
 
 * Manually inject the `ContactService` using the `@Inject` decorator.
@@ -155,7 +154,7 @@ import { PersonListComponent } from "./components/person-list.component";
 ...
 ----
 
-==== Modifying the template code
+=== Modifying the template code
 Consider the template code of our `list` component:
 
 [source, html]
@@ -239,7 +238,7 @@ Your modified template code should now look like so:
 </div >
 ----
 
-=== Downgrading the Search component
+== Downgrading the Search component
 To maintain compatibility, we will need to downgrade our `PersonListComponent`.
 
 In `person-list.component.ts`, import the `downgradeComponent` function like so:
@@ -260,7 +259,7 @@ angular
     }));
 ----
 
-=== Upgrading the infinite-scroll third-party module
+== Upgrading the infinite-scroll third-party module
 The `list` component uses a third party package called `infinite-scroll` to add infinite scrolling to our application's contact list. To maintain the same functionality in Angular, we will replace this with `angular2-infinite-scroll` which is a more modern, Angular compatible version of `infinite-scroll`.
 
 Execute the following command which will install and add the dependency to our `package.json` file:

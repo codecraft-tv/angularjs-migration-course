@@ -1,11 +1,11 @@
+:toc:
 = Single Responsibility
-:imagesdir: images/
 
 In this lecture we will discuss the Single Responsibility rule for Angular applications and see how we can implement the same in our contacts application.
 
 == The Angular Style Guide
 
-The Angular 1 Style Guide is an opinionated style guide for syntax, conventions and structuring of Angular applications.
+The https://github.com/johnpapa/angular-styleguide/blob/master/a1/README.md[Angular 1 Style Guide] is an opinionated style guide for syntax, conventions and structuring of Angular applications.
 
 The style guide consists of an extensive list of best practices and conventions for application development. You can implement as many or as little of this as you want; Our focus will be on understanding the Single Responsibility rule and how it can be implemented into our application.
 

@@ -1,11 +1,10 @@
 = Migrate Contact Service
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 In this lecture, we are going to migrate our `contact.service.ts` entity to Angular and then downgrade it to maintain compatibility with our AngularJS entities across the application. So lets get started!
 
-=== Converting the Contact Resource to Angular
+== Converting the Contact Resource to Angular
 
 Our modernized `contact.service.ts` entity has a class-based implementation like so:
 
@@ -139,7 +138,7 @@ angular
 
 Lets look at how we can convert this class (and its services) to Angular.
 
-==== Dependency injection
+=== Dependency injection
 The `ContactService` class requires an instance of the `Contact` class to provide its functionality to the rest of the application. We can start our conversion by modifying the `ContactService` constructor to inject this required instance into our class like so:
 
 [source, javascript]
@@ -169,14 +168,14 @@ Modify the rest of the code to reflect these changes like so:
 this.toaster.pop(...)
 ----
 
-==== Typescript error checking
+=== Typescript error checking
 Lets deviate a bit from the objective of this lecture, and have a look at the importance of `Typescript` in our application.
 
 If you are using a capable `IDE` that leverages some of Typescript's advanced type checking and error reporting functionality in your source files, you may have noticed the following type check error in the `contact.service.ts` file:
 
 [#img-component-diagram]
 .Typescript type check error 1
-image::29-img-001.png[]
+image::./images/29-img-001.png[]
 
 The reason for this lies in the type definition syntax of the `query` function (and the `get` function) in our `contact.resource.ts` file. This can be fixed by updating the argument type definition of the `query` and `get` functions from:
 
@@ -206,7 +205,7 @@ However, we are still not out of the woods. If you look closely, you will notice
 
 [#img-component-diagram]
 .Typescript type check error 2
-image::29-img-002.png[]
+image::./images/29-img-002.png[]
 
 This is because the resolved promise from the `query` method is expected to return an `Array` but actually returns an `Object`. To fix this, cast the return object of the `query` method to an array like so:
 
@@ -219,7 +218,7 @@ query(params: { [key: string]: string }): Promise<Array<any>> {
 
 TIP: It is possible to further improve type safety by creating a `Person` model and casting the return object to an Array of type `Person` like so: `<Array<Person>>`
 
-=== Downgrading our Contact Service
+== Downgrading our Contact Service
 
 Similar to our previous lecture, we can now downgrade our contact service so that it maintains compatibility with the AngularJS entities in our application.
 
@@ -259,13 +258,13 @@ import { HttpClientModule } from '@angular/common/http';
 ....
 ----
 
-=== Revert Resource downgrade
+== Revert Resource downgrade
 
 Lets look at a visualization of our application's state at this point:
 
 [#img-component-diagram]
 .Application component diagram with converted Service and Resource entities
-image::29-img-003.jpg[]
+image::./images/29-img-003.jpg[]
 
 An interesting observation with the conversion of the `Service` entity to Angular is that our `Resource` entity is now no longer used by any AngularJS services. Therefore, we can revert back its downgrade, converting it in to a purely Angular entity.
 
@@ -287,6 +286,6 @@ import * as angular from 'angular';
 
 from the `contact.resource.ts` file.
 
-=== Verification
+== Verification
 
 Re-build the project and run it on `localhost` as before, and everything should function as expected. (except for the `toast` functionality which we will fix in the next lecture!)

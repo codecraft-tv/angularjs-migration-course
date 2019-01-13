@@ -1,5 +1,4 @@
 = Project Structure
-:imagesdir: images/
 
 Hopefully at this point, you have the project set up successfully with a working contacts application up and running on your `localhost`. Let's now take a look at the project structure to understand how everything is organized.
 
@@ -7,7 +6,6 @@ Hopefully at this point, you have the project set up successfully with a working
 
 The project structure for the application is as follows:
 
-----
  data/
  db.json
  orig-db.json
@@ -25,7 +23,6 @@ The project structure for the application is as follows:
  package-lock.json
  package.json
  README.md
-----
 
 === data
 The `data` folder contains data for our API server. The `orig-db.json` file contains the complete database. The `db.json` file contains the current data of the contacts application. Any changes done to the application will reflect in the `db.json` file.
@@ -35,19 +32,19 @@ NOTE: Running `npm run server` will always override the `db.json` file reverting
 === app
 Contains all the application logic relevant to our application.
 
-==== app.main.js
+app.main.js::
 This is the initiation point of our application which bootstraps all modules required for our application.
 
-==== app.routes.js
+app.routes.js::
 Contains routing logic for application based on the `URL` paths specified.
 
-==== controllers.js
+controllers.js::
 Contains all the controllers of our application.
 
-==== filers.js
+filers.js::
 Contains all the filters of our application.
 
-==== services.js
+services.js::
 Contains all the services of our application.
 
 === README.md

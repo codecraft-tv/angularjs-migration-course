@@ -1,11 +1,10 @@
 = Migrate Contact Resource
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 In this section we are going to start migrating our application services to Angular. We will start our migration process with the Contact resource service. So lets get started!
 
-=== Converting the Contact Resource to Angular
+== Converting the Contact Resource to Angular
 Our modernized `contact.resource.ts` entity has a class-based implementation that uses AngularJS services such as the `$http` module like so:
 
 .contact.resource.ts
@@ -49,7 +48,7 @@ angular
 
 Lets look at how we can convert this class (and its services) to Angular.
 
-==== Replacing $http with HttpClient
+=== Replacing $http with HttpClient
 The `$http` module is a core AngularJS service that facilitates communication with an `HTTP` server. In modern Angular, the equivalent to this is the `httpClient` module. Lets see how we can replace our `$http` module with the `httpClient` module in our `contact.resource.ts` entity.
 
 First, import the `httpClient` module into our class like so:
@@ -79,7 +78,7 @@ NOTE: An alternative method to inject the `HttpClient` instance is to add the `@
 
 The injected `HttpClient` service will be accessible within the class via the private `http` variable.
 
-==== Modifying service functions
+=== Modifying service functions
 Syntactically and functionality wise, the `httpClient` service is similar to the `$http` service. (which is the main reason to switch it in with `$resource` in our modernization step!) However, a key difference between the two is that the `$http` service methods return a `Promise` while the `$HttpClient` service methods return an `Observable`.
 
 Fortunately, there is a simple fix for this. Since our application logic is already written based on promises, we can simply convert an `Observable` to a `Promise` using the `.toPromise()` method like so:
@@ -145,12 +144,12 @@ angular
   .service("Contact", Contact);
 ----
 
-=== Downgrading our Contact Resource
+== Downgrading our Contact Resource
 Lets take a step back and try and visualize what we have done now.
 
 [#img-component-diagram]
 .Contacts application component diagram with converted Resource entity
-image::28-img-001.png[]
+image::./images/28-img-001.png[]
 
 
 We have taken the leaf node of our application (the Resource entity) and re-written it in Angular. But we still need to use this Resource entity within our AngularJS Service entity. in order to maintain this compatibility, we need to _downgrade_ our Resource entity so that it can be used inside an AngularJS service.

@@ -1,4 +1,4 @@
-= Converting controllers to components
+= Controllers to components
 :toc:
 :toclevels: 5
 

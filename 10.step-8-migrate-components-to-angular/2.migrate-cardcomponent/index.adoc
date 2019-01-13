@@ -1,22 +1,21 @@
 = Migrate CardComponent
 :toc:
 :toclevels: 5
-:imagesdir: images/
 
 In the previous lecture, we migrated our `search` component to Angular. In this lecture we are going to do the same with the `card` component. In doing so, we will see how to convert AngularJS `filters` to Angular `pipes`, and handle third-party library migration by using an equivalent library in Angular. Lets get started!
 
-=== Component visualization
+== Component visualization
 With the migration of our `Services` and the `Search` component to Angular, our application component diagram now looks like this:
 
 [#img-component-diagram]
 .Current contacts application component diagram
-image::33-img-001.jpg[]
+image::./images/33-img-001.jpg[]
 
 Once we complete the migration of the `card` component, our application will have the following component visualization:
 
 [#img-component-diagram]
 .Contacts application component diagram after the Search component migration
-image::33-img-002.jpg[]
+image::./images/33-img-002.jpg[]
 
 === Creating the CardComponent class
 The `card` component code is contained within the `card.component.ts` file which is as follows:
@@ -231,7 +230,7 @@ import { CardComponent } from "./components/card.component";
 
 NOTE: You only need to add a component to the `entryComponents` property if you plan to downgrade it.
 
-=== Modifying the template code
+== Modifying the template code
 The above template code in our `@Component` decorator still uses AngularJS syntax, which can be converted to a more modern, Angular syntax as follows:
 
 * Replace the `ng-class` attribute with `[ngClass]`.
@@ -261,7 +260,7 @@ with the following `[attr.href]` attribute as follows:
 <a class="btn btn-default btn-sm" [attr.href]="'#!/edit/' +  user.email">
 ----
 
-=== Converting filters to pipes
+== Converting filters to pipes
 Our `card` component uses a custom AngularJS filter called `defaultImage`, which sets a default image in our `card` component if no values are passed into its filter function. The filter has the following implementation in AngularJS:
 
 .default-image.filter.ts
@@ -379,7 +378,7 @@ The `card` component uses a third party package called `ladda` to add a spinner 
 
 [#img-component-diagram]
 .ladda spinner effect
-image::33-img-003.png[]
+image::./images/33-img-003.png[]
 
 The relevant code snippet of its usage is shown below:
 

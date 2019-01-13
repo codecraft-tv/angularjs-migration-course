@@ -1,5 +1,5 @@
+:toc:
 = Project Setup
-:imagesdir: images/
 
 In this lecture we will go through the steps of setting up our project and initializing it to run on your `localhost`. So lets get started!
 

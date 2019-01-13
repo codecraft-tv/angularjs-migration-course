@@ -1,24 +1,20 @@
 = The Plan
 
-A man without a plan, is a man planning to fail! In this lecture we will go through our _10-step plan_ on how to migrate an AngularJS application to Angular. So lets get started!
+In this lecture we will briefly go over our _10 step plan_ on how to migrate an AngularJS application to Angular. In later lectures we wil go into each step in much more detail.
 
 ==== 1. Single Responsibility
 Follow single responsibility by making sure each file always contains only a single entity.
 
 ==== 2. TypeScript & Webpack
-
 Add TypeScript & Webpack. Seriously, do it. This will make your life a lot easier as we make our way through the migration process.
 
 ==== 3. AngularJS 1.5
-
-Migrate to at least AngularJS 1.5 to make use of `components` when converting your application to Angular.
+Migrate to *at least* AngularJS 1.5 to make use of `components` when converting your application to Angular.
 
 ==== 4. Component'ify
-
 Breakdown your AngularJS code into components.
 
 ==== 5. Modernize
-
 Modernize your AngularJS application with modern Javascript and TypeScript techniques.
 
 ==== 6. Dual Boot

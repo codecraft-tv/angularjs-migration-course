@@ -1,4 +1,4 @@
-= Converting directives to components
+= Directives to components
 :toc:
 :toclevels: 5
 

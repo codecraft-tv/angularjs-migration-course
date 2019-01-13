@@ -10,6 +10,8 @@ During the process of migration you will run both AngularJS and Angular in the s
 === Angular dependencies
 Add the following dependency information to the package.json file's `dependencies` section to include the required Angular dependencies in our application:
 
+NOTE: The code below is using Angular 5, use whatever is the latest version of Angular at the time of your migration.
+
 [source, json]
 ----
 ...
@@ -231,6 +233,7 @@ A quick fix for this would be to add the following code to the `webpack.config.j
 
 
 If you would like a deep dive into this issue and understand whats going on, you can read about it in this github https://github.com/angular/angular/issues/11580#issuecomment-327338189[issue] thread.
+
 
 ==== Verification
 If all goes well and the application is accessible on `localhost`, your browser's console should display the following `console.log` statement:
