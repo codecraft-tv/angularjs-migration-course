@@ -1,0 +1,10 @@
+---
+layout: course-landing.html
+course_path: courses/angularjs-migration/
+course_title: AngularJS Migration
+course_description: Build the web applications of tomorrow using the new Angular web framework from Google.
+course_slug: angularjs-migration
+course_cover: /assets/images/courses/angular/angular.w555.playicon.noptim.jpg
+course_promo_video: //www.youtube.com/watch?v=PMkdiZU6kVc
+course_book: no
+---
