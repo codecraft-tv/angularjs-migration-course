@@ -1,0 +1,21 @@
+= Introduction
+
+Hello there, welcome to my lecture series on how to migrate your AngularJS application to Angular!
+
+But before we begin, a fair warning to you the developer. _It is going to be hard._ Every AngularJS application is unique and there is never a one-size-fits-all solution that will fix all your problems.
+
+But here's the good news.
+
+This course can be your guide. I say _can_ because it is up to you to transform the potential of this course into something of use to you. If you follow the lectures properly and put in the required work, you _will_ have your very own AngularJS migration compass that will guide you to your answers.
+
+A few tips to help you reap the full benefits of this course:
+
+- Don't cherry pick your way through the lectures. If you are in, you are all in. Follow the lectures from A to Z.
+
+- Problems are part and parcel of the package. If you are stuck, do your research. Google is your friend. 
+
+- Did the research but still haven't got the answers? Post a question in a site like StackOverflow forum, spark a discussion!
+
+- Make sure to add enough information along with your questions. Remember, there is no such thing as too much information.
+
+Well then.. let's get started!

@@ -1,0 +1,230 @@
+= Cleanup the libs folder and deal with CSS
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+In this final lecture of our cleanup step, we will look at our `libs` folder and see how we can use `webpack` to efficiently manage our `.css` files.
+
+== The libs folder
+
+Consider the following `html` code from our `index.html` file:
+[source, html]
+----
+<head>
+  <base href="/">
+  <title>Contacts</title>
+  <link href="libs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/paper.css" rel="stylesheet">
+  <link href="libs/bootstrap-additions/dist/bootstrap-additions.min.css" rel="stylesheet">
+  <link href="libs/AngularJS-Toaster/toaster.min.css" rel="stylesheet">
+  <link href="libs/ladda/dist/ladda-themeless.min.css" rel="stylesheet">
+  <link href="libs/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+  <link href="css/main.css" rel="stylesheet">
+</head>
+----
+
+Notice the different `css` files that are loaded into the application, mainly from the `libs` folder. This is bad practice and can lead to issues ranging from security to performance.
+
+== Bundling our css files using webpack
+Lets first start by removing any `bower` references from our application and using `webpack` to bundle our `main.css` stylesheet with the rest of the application code.
+
+=== Removing Bower references
+If you remember, the original dependency management tool used by our contacts application was `Bower`. Since we have moved over to `npm`, we can get rid of all our application references to `Bower.`
+
+Therefore, go ahead and remove the following files and folders:
+
+1. bower.json file
+2. .bowerrc file
+3. libs folder (the directory specified to install `Bower` packages)
+4. templates folder
+
+=== Using webpack for css
+To use `webpack` with `sass` and `css` we have to install a few modules like so:
+----
+npm install --save-dev sass-loader css-loader style-loader node-sass
+----
+
+Next, add the following `loader` to our `webpack.config.js` file:
+
+----
+...
+module: {
+        loaders: [
+            ...
+            {
+              test: /\.scss$/,
+              loaders: ["style-loader", "css-loader", "sass-loader"]
+            }
+        ]
+    }
+...
+----
+
+The above loader specifies how `webpack` should process `.scss` files.
+
+1. The *sass-loader* will compile the `.scss` file into `.css`.
+
+2. The *css-loader* will bundle all the `.css` files together.
+
+3. The *style-loader* will then take the bundled `.css` files and insert it into our application, so that the styles are active on the page.
+
+Next, modify the `entry` property of our `webpack.config.js` file to include the `main.scss` file  like so:
+----
+entry: ["./src/app/main.ts", "./src/css/main.scss"]
+----
+
+Finally, comment out the following code that imports our `main.css` stylesheet into `index.html`, since our loader will now bundle it all together in the `bundle.js` file.
+
+----
+ `<link href="css/main.css" rel="stylesheet">`
+----
+
+Now if you re-build and run the application on `localhost`, you should see it functioning as expected. If you do an "inspect element" you will also notice the `css` styling information within the `style` tags of the `html` source.
+
+You may also notice a few errors in the console. This is expected, since we are not loading in some of the `css` files that were previously loaded from the `libs` folder.
+
+== A separate css stylesheet
+While the above process works well for development environments, this can cause issues in production. This is because we compile our style-sheet into the same `bundle.js` file that contains our application code, which can introduce delays when loading our application.
+
+Lets see how we can still use `webpack`, but have a separate bundled file containing our `css` styles.
+
+=== ExtractTextPlugin
+The `ExtractTextPlugin` extracts text from a bundle into a separate file. We can use this to extract our `css` style information from our `bundle.js` file.
+
+First, add the plugin to our `webpack.config.js` file like so:
+----
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+----
+
+Next, create a new instance of it like so:
+----
+const extractSass = new ExtractTextPlugin({
+    filename: "src/dist/bundle.css",
+    disable: process.env.NODE_ENV === "development"
+});
+----
+
+Then, replace the previously added `loader` and add it to the list of `plugins` like so:
+----
+...
+module: {
+  loaders: [
+    {
+      ...
+    },
+    {
+      test: /\.scss$/,
+      use: extractSass.extract({
+          use: [{
+              loader: "css-loader"
+          }, {
+              loader: "sass-loader"
+          }],
+          // use style-loader in development
+          fallback: "style-loader"
+      })
+    }
+  ]
+},
+plugins: [
+  extractSass,
+  ...
+]
+...
+----
+
+We can now leverage this `bundle.css` file to be used in our `index.html` file by adding the following code to our `head` tag in the `index.html` file:
+[source, html]
+----
+<head>
+  ...
+  <link href="dist/bundle.css" rel="stylesheet">
+</head>
+----
+
+Now, when you build your application you will notice two bundle files generated by the build process, namely `bundle.css` and `bundle.js` in the `src/dist` folder.
+
+== Fixing the remaining css files
+If we go back to our `index.html` file, you will see that there are still multiple `css` files that are being loaded individually into our application.
+
+[source, html]
+----
+<head>
+  <base href="/">
+  <title>Contacts</title>
+
+  <1>
+  <link href="libs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/paper.css" rel="stylesheet">
+  <link href="libs/bootstrap-additions/dist/bootstrap-additions.min.css" rel="stylesheet">
+  <link href="libs/AngularJS-Toaster/toaster.min.css" rel="stylesheet">
+  <link href="libs/ladda/dist/ladda-themeless.min.css" rel="stylesheet">
+  <link href="libs/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+  <link href="dist/bundle.css" rel="stylesheet">
+</head>
+----
+
+NOTE: `paper.css` contains bootstrap. Hence, we do not require to load both the `bootstrap.min.css` and the `paper.css` into our application.
+
+Lets consider these files individually and see how we can improve upon this.
+
+=== bootstrap.min.js
+Bootstrap is an extremely popular `css` framework. In my opinion, the best option to load bootstrap into our application is via a `cdn`. We can do this like so:
+
+[source, html]
+----
+<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
+----
+
+=== bootstrap-additions.min.css
+We can get rid of the `bootstrap-additions.min.js` import since are not using it anymore in our migrated Angular application. (previously this was used for a date picker element in AngularJS)
+
+=== toaster.min.css
+To include the `angular2-toaster` style-sheet into our application, add the following import to the top of the `main.scss` file, as specified in the https://github.com/Stabzs/Angular2-Toaster[github repository] of `angular2-toaster`.
+[source, javascript]
+----
+@import '~/angular2-toaster/src/toaster';
+----
+
+=== font-awesome.min.css
+Again, this is an extremely popular font and icon toolkit based on `CSS` and `LESS`. Therefore, we can use a `cdn` to load this style-sheet like so:
+----
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+----
+
+=== ladda-themeless.min.css
+To include the `ladda` style-sheet into our application, add the following import to the top of the `main.scss` file, as specified in the https://github.com/moff/angular2-ladda[github repository] of the `angular2-ladda`.
+[source, javascript]
+----
+@import '~/ladda/css/ladda';
+----
+
+Your `index.html` file should now look like so:
+[source, html]
+----
+<!DOCTYPE html >
+<html lang="en">
+
+<head>
+  <base href="/">
+  <title>Contacts</title>
+
+  <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="dist/bundle.css" rel="stylesheet">
+</head>
+
+<body>
+  <app-root></app-root>
+
+  <!-- Angular -->
+  <script src="dist/bundle.js"></script>
+
+</body>
+
+</html>
+----
+
+We can now delete the `main.css` and the `paper.css` files since they are not being used anymore. Be sure to re-build and run your application to verify that everything is in order, and working as expected.
+
+This also brings us to the end of the cleanup step, which in turn brings us to the end of our migration process! Our application is now completely migrated from `AngularJS` to Angular.

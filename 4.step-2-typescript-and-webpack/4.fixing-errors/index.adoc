@@ -1,0 +1,100 @@
+= Fixing Errors
+:toc:
+:toclevels: 5
+
+Up until this point, we have converted our Javascript files to Typescript, switched dependency management from `bower` to `npm`, and integrated build tooling using Webpack. In this lecture, we will take a look at how we can resolve some of the issues that arise when building our application for the first time using Webpack.
+
+== Troubleshooting build errors
+The build errors that you get may or may not be similar to what we discuss in this lecture. However, there is always a common set of steps that you can follow to debug a given error.
+
+1. Read the error and absorb all provided information.
+2. Identify the specific line of code that is causing the error.
+3. Analyze the identified code. It could be as simple as fixing a simple syntax error!
+4. Copy the error string and google it. More often than not, someone else has faced the same problem and has already found a solution!
+
+Now lets take a look at a few build errors that you will most likely have faced if you tried to execute the build script that we added to the `package.json` file in the previous lecture.
+
+
+=== Missing imports
+
+----
+Error: Cannot find name 'angular'
+----
+This is a very common issue that arises due to your application not "knowing" what Angular is. Thankfully, solving this is as simple as adding the following import statements to the top of every file that uses Angular within the code:
+
+[source,javascript]
+----
+import * as angular from 'angular';
+----
+
+=== Missing properties
+----
+... (78, 14)
+Error: Property 'isDeleting' does not exist on type '{..}'
+----
+According to the error log, the culprit code for this error resides on line 78 of the `contact.service.ts` file:
+
+[source,javascript]
+----
+....
+76 removeContact: function(person) {
+77       var d = $q.defer();
+78       self.isDeleting = true;
+....
+----
+
+If you take a look at the definition of the `self` object in the `contact.service.ts` file, you will see that it does not contain an `isDeleting` property. This can be fixed by including the `isDeleting` property into `self` object definition like so:
+
+[source,javascript]
+----
+var self = {
+      ....
+      isSaving: false,
+      isDeleting: false,
+      persons: [],
+      ....
+----
+
+=== Undeclared variables
+----
+... (80, 14)
+Error: Cannot assign to 'name' because it is a constant or a read-only property.
+----
+
+This is a common error in Javascript if you are not using `strict-mode` and is a result of not declaring a variable before use. The guilty line of code lies on line 80 of the `contact.service.ts` file.
+
+[source,javascript]
+----
+....
+removeContact: function(person) {
+        self.isDeleting = true;
+        name = person.name;
+....
+----
+
+Replacing `name = person.name;` with `var name = person.name;` will fix this error.
+
+== Running the Application
+Once all errors are resolved, and `npm run build` executes without any errors, you should be able to view the `bundle.js` file in `src/dist`, containing all the application and dependent library code bundled into a single file.
+
+To run the application using this newly compiled `bundle.js` file, modify the `index.html` file by replacing all of the previously added `script` tags with:
+
+[source,html]
+----
+ <script src="dist/bundle.js"></script>
+----
+
+Running `npm run server` will now load the application using the `bundle.js` file on `http://localhost:5000`
+
+== Summary
+This brings us to the conclusion of step 2 where we:
+
+* Converted our application code from Javascript to Typescript
+
+* Switched from `bower` to `npm` for dependency management
+
+* Integrated Webpack as the build tool to bundle our application into a single `bundle.js` file.
+
+* Looked at resolutions for common errors that one might run into during the build process.
+
+All this ground work counts as a big step towards modernizing (and eventually migrating) our AngularJS application to Angular!

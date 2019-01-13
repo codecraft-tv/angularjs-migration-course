@@ -1,0 +1,30 @@
+= Move to latest AngularJS
+:toc:
+:toclevels: 5
+
+The closer you can get your application's AngularJS version to the latest, the easier your migration will be to modern Angular. In this lecture, we are going to take a look at how we can _update_ the AngularJS version of our contacts application to a more modern version. So lets get started!
+
+=== Version identification
+The latest AngularJS version information can be obtained from the https://angularjs.org/[official AngularJS website]. At the time of writing, this is `1.6.6`
+
+TIP: I recommend moving to at least AngularJS 1.5 which introduced `components` to the AngularJS eco-system. This will make our migration process a lot easier!
+
+=== Updating dependencies
+
+To upgrade our application to use AngularJS 1.6.6, change the versions of `angular`, `angular-animate` and `angular-resource` packages to `1.6.6` in the `dependencies` section of the `package.json` file.
+
+Run `npm install` to ensure that the specified dependencies are downloaded into the application.
+
+=== Troubleshooting
+In a perfect world, your application would now sit pretty on the latest version of AngularJS. However, we do not live in a perfect world. if you started off from a very old version of AngularJS, you may run into compatibility issues when trying to run your application.
+
+Here's a few things that you can do to fix and/or avoid them.
+
+==== 1. The AngularJS CHANGELOG
+The AngularJS https://github.com/angular/angular.js/blob/master/CHANGELOG.md[change log] contains information on all the changes a given AngularJS version has introduced. If you are running into errors after a version change, this is a good place to check if your version update has introduced any breaking changes into your application.
+
+==== 2. Selecting an update version
+If there is a big version gap between your application's AngularJS version and the latest, try updating versions incrementally. For example, if your application is running AngularJS 1.2, do not immediately upgrade it to 1.6.6. Instead choose a version closer to 1.2. This will allow you to narrow down your issues and provide easier troubleshooting options.
+
+==== 3. Google is your friend
+It is very likely that someone else have already faced (and solved!) the issues that you are facing now. Whatever errors that you get on your console, google them and see if solutions are available in forums like Stackoverflow.

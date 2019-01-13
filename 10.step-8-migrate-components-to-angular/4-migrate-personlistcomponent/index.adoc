@@ -1,0 +1,318 @@
+= Migrate PersonListComponent
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+With the migration of the `spinner` component, we have now migrated all the dependencies of the `list` component, which we can now migrate to Angular as well. So lets get started!
+
+==== Component visualization
+
+[#img-component-diagram]
+.Current contacts application component diagram
+image::35-img-001.jpg[]
+
+Figure 1 shows a visualization of our application's current component state. Since we have migrated both dependencies of the `list` component to Angular, we can now go ahead and convert the `list` component itself to Angular.
+
+The expected component visualization for our application after the migration of the `list` component will be like so:
+
+[#img-component-diagram]
+.Expected contacts application component diagram
+image::35-img-002.jpg[]
+
+=== Converting our list component to Angular
+
+The code for our `list` component resides in the `person-list.component.ts` file:
+
+.person-list.component.ts
+[source, javascript]
+----
+import * as angular from 'angular';
+
+
+export let PersonListComponent = {
+  selector: 'personList',
+  template: `
+    <div class="col-md-12" >
+
+    	<div class="row"
+    	     infinite-scroll="$ctrl.contacts.loadMore()"
+    	     infinite-scroll-immediate-check="false"
+    	     infinite-scroll-distance="1"
+    			>
+
+    		<cc-card ng-repeat="person in $ctrl.contacts.persons track by person.id"
+    				     user="person" >
+    		</cc-card>
+
+    	</div >
+
+    	<div ng-show="$ctrl.contacts.persons.length == 0 && !$ctrl.contacts.isLoading" >
+    		<div class="alert alert-info" >
+    			<p class="text-center" >No results found for search term '{{ $ctrl.search }}'</p >
+    		</div >
+    	</div >
+
+    	<cc-spinner is-loading="$ctrl.contacts.isLoading"
+    	            message="Loading..." ></cc-spinner >
+    </div >
+`,
+  bindings: {},
+  controller: class PersonListController {
+    public contacts = null;
+
+    constructor(ContactService) {
+      this.contacts = ContactService;
+    }
+  }
+};
+
+angular
+    .module('codecraft')
+    .component(PersonListComponent.selector, PersonListComponent);
+----
+Lets start by converting this file into a class-based Angular implementation like we have done with our previous components.
+
+==== Creating the PersonListComponent class
+* Take the code from the `controller` property and move it to a separate `PersonListComponent` class.
+
+* Manually inject the `ContactService` using the `@Inject` decorator.
+
+* Then, add the `@Component` decorator  to this newly created `PersonListComponent` class using the `selector` and `template` properties.
+
+Your `person-list.component.ts` file should look like so:
+
+[source, javascript]
+----
+import * as angular from 'angular';
+
+import { Inject, Component } from "@angular/core";
+
+import { ContactService } from "../services/contact.service";
+
+@Component({
+	selector: 'personList',
+	template: `
+    <div class="col-md-12" >
+
+      <div class="row"
+           infinite-scroll="$ctrl.contacts.loadMore()"
+           infinite-scroll-immediate-check="false"
+           infinite-scroll-distance="1"
+          >
+
+        <cc-card ng-repeat="person in $ctrl.contacts.persons track by person.id"
+                 user="person" >
+        </cc-card>
+
+      </div >
+
+      <div ng-show="$ctrl.contacts.persons.length == 0 && !$ctrl.contacts.isLoading" >
+        <div class="alert alert-info" >
+          <p class="text-center" >No results found for search term '{{ $ctrl.search }}'</p >
+        </div >
+      </div >
+
+      <cc-spinner is-loading="$ctrl.contacts.isLoading"
+                  message="Loading..." ></cc-spinner >
+    </div >
+`})
+export class PersonListComponent {
+	constructor( @Inject(ContactService) public contacts: ContactService) {
+	}
+}
+})
+----
+
+Next, add this newly created `PersonListComponent` to the `declarations` and `entryComponents` properties of the `NgModule` like so:
+
+[source, javascript]
+----
+...
+import { PersonListComponent } from "./components/person-list.component";
+...
+
+@NgModule({
+  imports: [
+    ...
+  ],
+  providers: [
+    ...
+  ],
+  declarations: [
+    SearchComponent,
+    DefaultImagePipe,
+    CardComponent,
+    SpinnerComponent,
+    PersonListComponent
+  ],
+  entryComponents: [
+    SearchComponent,
+    CardComponent,
+    SpinnerComponent,
+    PersonListComponent
+  ]
+})
+...
+----
+
+==== Modifying the template code
+Consider the template code of our `list` component:
+
+[source, html]
+----
+<div class="col-md-12" >
+
+  <div class="row"
+       infinite-scroll="$ctrl.contacts.loadMore()"
+       infinite-scroll-immediate-check="false"
+       infinite-scroll-distance="1"
+      >
+
+    <cc-card ng-repeat="person in $ctrl.contacts.persons track by person.id"
+             [user]="person" >
+    </cc-card>
+
+  </div >
+
+  <div ng-show="$ctrl.contacts.persons.length == 0 && !$ctrl.contacts.isLoading" >
+    <div class="alert alert-info" >
+      <p class="text-center" >No results found for search term '{{ $ctrl.search }}'</p >
+    </div >
+  </div >
+
+  <cc-spinner is-loading="$ctrl.contacts.isLoading"
+              message="Loading..." ></cc-spinner >
+</div >
+----
+
+The above template code still uses AngularJS syntax, which can be converted to a more modern, Angular syntax as follows:
+
+* The `card` component will now be used from an Angular context. Therefore, its usage can be changed from `cc-card` to `ccCard`, and the `ng-repeat` attribute can be replaced with `*ngFor` like so:
+
+[source, javascript]
+----
+<ccCard  *ngFor="let person of contacts.persons" [user]="person" ></ccCard>
+----
+
+* Similarly, the `spin` component will also be used from an Angular context. Therefore, its usage can be changed from `cc-spinner` to `ccSpinner`, and the `is-loading` attribute can be changed to `isLoading` like so:
+
+[source, javascript]
+----
+<ccSpinner [isLoading]="contacts.isLoading" [message]="'Loading...'" ></ccSpinner >
+----
+
+* Change the remaining occurence of `ng-show` with an `*ngIf` and modify the corresponding `div` element like so:
+
+[source, javascript]
+----
+<div *ngIf="contacts.persons.length == 0 && !contacts.isLoading">
+		<div class="alert alert-info" >
+			<p class="text-center" >No results found for search term '{{ contacts.search }}'</p >
+		</div >
+	</div >
+----
+
+NOTE: The `infinite-scroll` directive is a third-party dependency that will be handled separately.
+
+Your modified template code should now look like so:
+[source, javascript]
+----
+<div class="col-md-12" >
+   <div class="row"
+   infinite-scroll
+   [infiniteScrollDistance]="2"
+   [immediateCheck]="false"
+   [infiniteScrollThrottle]="100"
+   (scrolled)="contacts.loadMore()"
+   >
+   <ccCard  *ngFor="let person of contacts.persons"
+   [user]="person" >
+   </ccCard>
+</div >
+<div *ngIf="contacts.persons.length == 0 && !contacts.isLoading">
+   <div class="alert alert-info" >
+      <p class="text-center" >No results found for search term '{{ contacts.search }}'</p >
+   </div >
+</div >
+<ccSpinner [isLoading]="contacts.isLoading"
+[message]="'Loading...'" ></ccSpinner >
+</div >
+----
+
+=== Downgrading the Search component
+To maintain compatibility, we will need to downgrade our `PersonListComponent`.
+
+In `person-list.component.ts`, import the `downgradeComponent` function like so:
+
+[source, javascript]
+----
+import { downgradeComponent } from "@angular/upgrade/static";
+----
+
+and modify the component registration code like so:
+
+[source, javascript]
+----
+angular
+    .module('codecraft')
+    .directive("personList", downgradeComponent({
+        component: PersonListComponent
+    }));
+----
+
+=== Upgrading the infinite-scroll third-party module
+The `list` component uses a third party package called `infinite-scroll` to add infinite scrolling to our application's contact list. To maintain the same functionality in Angular, we will replace this with `angular2-infinite-scroll` which is a more modern, Angular compatible version of `infinite-scroll`.
+
+Execute the following command which will install and add the dependency to our `package.json` file:
+
+----
+npm install angular2-infinite-scroll --save
+----
+
+Next, add the `InfiniteScrollModule` as an import in the `NgModule` `imports` list so that it is available to the rest of the application like so:
+
+[source, javascript]
+----
+...
+import {InfiniteScrollModule} from "angular2-ladda";
+...
+@NgModule({
+  imports: [
+    BrowserModule,
+    UpgradeModule,
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule,
+    LaddaModule,
+    InfiniteScrollModule
+  ],
+  ...
+})
+...
+----
+
+Finally, update the template code in our `PersonListComponent` decorator, to use our modern Angular infinite scroll package that we just added by replacing the following code:
+
+[source, html]
+----
+<div class="row"
+ infinite-scroll="$ctrl.contacts.loadMore()"
+ infinite-scroll-immediate-check="false"
+ infinite-scroll-distance="1"
+>
+----
+with:
+[source, html]
+----
+<div class="row"
+ infinite-scroll
+ [infiniteScrollDistance]="2"
+ [immediateCheck]="false"
+ [infiniteScrollThrottle]="100"
+ (scrolled)="contacts.loadMore()"
+>
+----
+
+With this, we complete the migration of our `list` component from AngularJS to Angular! Be sure to rebuild and run the application on `localhost` to verify that everything works as expected.
+
+NOTE: You may also remove the downgrades of the `card` and `spinner` components which are now only used from an Angular context in our application.

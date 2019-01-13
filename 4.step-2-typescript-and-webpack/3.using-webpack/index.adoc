@@ -1,0 +1,144 @@
+= Using Webpack
+:toc:
+:toclevels: 5
+
+In this lecture we will implement our build tool chain which will compile our AngularJS application's `Typescript` files into `Javascript` and finally, bundle them all together into a single file using `webpack`.
+
+== Build Tool Chain
+
+=== Dev dependencies
+
+Open a terminal, navigate into the root of the cloned AngularJS migration project and run the following command to install the `typescript`, `webpack`, `rimraf`, and `ts-loader` node modules.
+
+* `rimraf` is an executable that is used to clean the installed node packages in a node based project.
+
+* `ts-loader` is a Typescript loader for Webpack.
+
+----
+npm install rimraf ts-loader typescript webpack --save-dev
+----
+
+TIP: The `--save-dev` flag is used for modules used in development, but not required in a production environment. The modules will be saved under the `devDependencies` section of the `package.json` file
+
+Once the installation is complete, the `devDependencies` section of the `package.json` file should be as follows:
+
+.package.json
+[source,json]
+----
+....
+"devDependencies": {
+  "bower": "^1.8.0",
+  "json-server": "^0.9.6",
+  "rimraf": "^2.6.2",
+  "serve": "^5.1.2",
+  "ts-loader": "^3.2.0",
+  "typescript": "^2.6.2",
+  "webpack": "^3.10.0"
+}
+----
+
+==== Configuration files
+
+===== tsconfig.json
+
+In order for Typescript to know how to convert Typescript files into Javascript, it requires the following `tsconfig.json` configuration file at the root of your project:
+
+.tsconfig.json
+[source,json]
+----
+{
+  "compilerOptions": {
+    "baseUrl": "",
+    "declaration": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["es6", "dom"],
+    "mapRoot": "./",
+    "module": "es6",
+    "moduleResolution": "node",
+    "outDir": "../dist/out-tsc",
+    "sourceMap": true,
+    "target": "es5",
+    "typeRoots": [
+      "../node_modules/@types"
+    ]
+  }
+}
+----
+
+===== webpack.config.js
+
+Typescript will convert individual `.ts` files into individual `.js` files. To bundle all this together into a single file, we will be using a tool called `webpack`. To configure Webpack, create the following `webpack.config.js` file at the root of your project:
+
+.webpack.config.js
+[source,javascript]
+----
+module.exports = {
+    entry: "./src/app/main.ts",
+    output: {
+        filename: "src/dist/bundle.js"
+    },
+    resolve: {
+        // Add '.ts' and '.tsx' as a resolvable extension.
+        extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
+    },
+    module: {
+        loaders: [
+            // all files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'
+            { test: /\.tsx?$/, loader: "ts-loader" }
+        ]
+    }
+};
+}
+----
+
+* `entry` - Specifies the entry point of the application for webpack to start bundling modules from.
+
+* `output` - An object holding the path to where the bundled modules should go
+
+* `loaders` - Loaders are used to preprocess files. In the above configuration, the loader specifies `.tsx` files to be preprocessed using the `ts-loader` extension.
+
+=== Building the application
+
+==== Entry point
+
+Before we can build our application using Webpack, we need to create the `main.ts` file in `./src/app/`, which is the specified entry point of our application.
+
+The `main.ts` should contain everything that Webpack needs to find to bundle our application together. This includes our application code, as well as all dependent libraries that is required to run the application. The updated `main.ts` file should be as follows:
+
+.main.ts
+[source,javascript]
+----
+import 'angular';
+import 'angular-resource';
+import 'angular-animate';
+import 'ng-infinite-scroll';
+import 'angular-spinner';
+import 'angular-auto-validate/dist/jcs-auto-validate';
+import 'angular-ladda';
+import 'angular-strap';
+import 'angularjs-toaster';
+import 'angular-ui-router';
+
+import './app.main';
+import './services';
+import './directives';
+import './filters';
+import './controllers';
+import './app.routes';
+----
+
+==== Build script
+Finally, we can modify the `package.json` by adding the following script to the `scripts` section to build our application using Webpack:
+
+----
+"build": "rimraf src/dist && webpack --bail --progress --profile"
+----
+
+The script can be executed using the following command:
+
+----
+npm run build
+----
+
+TIP: `webpack --bail --progress --profile` will bundle our application using the `webpack` configuration into `src/dist/bundle.js`. `rimraf src/dist` will ensure the `src/dist` directory is always deleted before a fresh build.

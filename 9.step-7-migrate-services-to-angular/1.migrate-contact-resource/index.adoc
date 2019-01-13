@@ -1,0 +1,193 @@
+= Migrate Contact Resource
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+In this section we are going to start migrating our application services to Angular. We will start our migration process with the Contact resource service. So lets get started!
+
+=== Converting the Contact Resource to Angular
+Our modernized `contact.resource.ts` entity has a class-based implementation that uses AngularJS services such as the `$http` module like so:
+
+.contact.resource.ts
+[source, javascript]
+----
+import * as angular from 'angular';
+
+export class Contact {
+  private apiRoot: string = "http://localhost:3000/contacts";
+  private $http;
+
+  constructor($http) {
+    this.$http = $http;
+  }
+
+  query(params: { string: string }) {
+    return this.$http.get(this.apiRoot, { params });
+  }
+
+  get(id, params?: { string: string }) {
+    return this.$http.get(this.apiRoot + '/' + id, { params });
+  }
+
+  save(data: any) {
+    return this.$http.post(this.apiRoot, data);
+  }
+
+  update(data: any) {
+    return this.$http.put(this.apiRoot + '/' + data.id, data);
+  }
+
+  remove(data: any) {
+    return this.$http.delete(this.apiRoot + '/' + data.id);
+  }
+}
+
+angular
+  .module("codecraft")
+  .service("Contact", Contact);
+----
+
+Lets look at how we can convert this class (and its services) to Angular.
+
+==== Replacing $http with HttpClient
+The `$http` module is a core AngularJS service that facilitates communication with an `HTTP` server. In modern Angular, the equivalent to this is the `httpClient` module. Lets see how we can replace our `$http` module with the `httpClient` module in our `contact.resource.ts` entity.
+
+First, import the `httpClient` module into our class like so:
+[source, javascript]
+----
+import {HttpClient} from "@angular/common/http";
+----
+
+Initialize an instance of the `HttpClient` so that it can be used within our `Contact` class. We can do this by modifying our constructor to use Angular's Dependency Injection Framework like so:
+
+[source, javascript]
+----
+...
+import {Injectable, Inject} from "@angular/core";
+
+export class Contact {
+  private apiRoot: string = "http://localhost:3000/contacts";
+
+  constructor(@Inject(HttpClient) private http: HttpClient) {
+  }
+  ...
+}
+...
+----
+
+NOTE: An alternative method to inject the `HttpClient` instance is to add the `@Injectable()` decorator above the class. However, this does not seem to work well in hybrid mode so I recommend using the `@Inject` decorator as shown above.
+
+The injected `HttpClient` service will be accessible within the class via the private `http` variable.
+
+==== Modifying service functions
+Syntactically and functionality wise, the `httpClient` service is similar to the `$http` service. (which is the main reason to switch it in with `$resource` in our modernization step!) However, a key difference between the two is that the `$http` service methods return a `Promise` while the `$HttpClient` service methods return an `Observable`.
+
+Fortunately, there is a simple fix for this. Since our application logic is already written based on promises, we can simply convert an `Observable` to a `Promise` using the `.toPromise()` method like so:
+
+With that in mind, lets look at the `query` function:
+
+[source, javascript]
+----
+query(params: { string: string }) {
+  return this.$http.get(this.apiRoot, { params });
+}
+----
+
+The `HttpClient` service instance is now referenced via the `http` variable. Replace the `$http` usages with `http`. Next, convert the returned `Observable` to a `Promise` using the `toPromise()` method like so:
+
+[source, javascript]
+----
+query(params: { string: string }) {
+  return this.http.get(this.apiRoot, { params }).toPromise();
+}
+----
+
+NOTE: You will need to import the `toPromise` using `import 'rxjs/add/operator/toPromise';`
+
+Similarly, we can modify the `get`, `save`, `update`, and `delete` functions so that our final `contact.resource.ts` class will look like so:
+
+.contact.resource.ts
+[source, javascript]
+----
+import {HttpClient} from "@angular/common/http";
+import {Injectable, Inject} from "@angular/core";
+import 'rxjs/add/operator/toPromise';
+
+export class Contact {
+  private apiRoot: string = "http://localhost:3000/contacts";
+
+  constructor(@Inject(HttpClient) private http: HttpClient) {
+  }
+
+  query(params: { string: string }) {
+    return this.http.get(this.apiRoot, { params }).toPromise();
+  }
+
+  get(id, params?: { string: string }) {
+    return this.http.get(this.apiRoot + '/' + id, { params }).toPromise();
+  }
+
+  save(data: any) {
+    return this.http.post(this.apiRoot, data).toPromise();
+  }
+
+  update(data: any) {
+    return this.http.put(this.apiRoot + '/' + data.id, data).toPromise();
+  }
+
+  remove(data: any) {
+    return this.http.delete(this.apiRoot + '/' + data.id).toPromise();
+  }
+}
+
+angular
+  .module("codecraft")
+  .service("Contact", Contact);
+----
+
+=== Downgrading our Contact Resource
+Lets take a step back and try and visualize what we have done now.
+
+[#img-component-diagram]
+.Contacts application component diagram with converted Resource entity
+image::28-img-001.png[]
+
+
+We have taken the leaf node of our application (the Resource entity) and re-written it in Angular. But we still need to use this Resource entity within our AngularJS Service entity. in order to maintain this compatibility, we need to _downgrade_ our Resource entity so that it can be used inside an AngularJS service.
+
+First, import the `downgradeInjectable` function into our class like so:
+[source, javascript]
+----
+import {downgradeInjectable} from '@angular/upgrade/static';
+----
+
+Next, modify the component registration code from a `service` to a `factory` and wrap the `Contact` class using our newly imported function so that it can be used inside AngularJS:
+
+[source, javascript]
+----
+angular
+  .module("codecraft")
+  .factory("Contact", downgradeInjectable(Contact));
+----
+
+Finally, to make our `Contact` resource available to the  Angular Dependency Injection Framework, add it as a `provider` in the `main.ts` file. You will also need to add the `HttpClientModule` to the `imports` array so that it can be used inside the `Contact` resource:
+
+[source, javascript]
+----
+....
+import { HttpClientModule } from '@angular/common/http';
+
+@NgModule({
+  imports: [
+    BrowserModule,
+    UpgradeModule,
+    HttpClientModule
+  ],
+  providers: [
+    Contact
+  ]
+})
+....
+----
+
+With this, we have now completed the conversion of our Resource entity to Angular, followed by downgrading it to maintain compatibility with AngularJS.

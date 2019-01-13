@@ -1,0 +1,33 @@
+= Use New Toaster Module
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+In this lecture we will see how we can replace the older AngularJS toaster module with a more modern, Angular version. So lets get started!
+
+== Adding angular2-toaster module
+Since we already imported the `angular2-toaster` module into our application at the beginning of this section, what's left is to integrate it into our contact service entity.
+
+This is as easy as importing the `ToasterService` and changing the `constructor` syntax of the `ContactService` class (in `contact.service.ts`) like so:
+
+[source, javascript]
+----
+...
+import { ToasterService } from 'angular2-toaster';
+
+@Injectable()
+export class ContactService {
+  ...
+  constructor(private contact: Contact,
+              private toaster: ToasterService) {
+    ...
+  }
+  ...
+}
+----
+
+That's it! Since the `angular2-toaster` module uses the same API as its AngularJS version, we can leave the rest of the code as it is.
+
+NOTE: We have replaced the manually used `@Inject` decorator with the `@Injectable` decorator for the class.
+
+Re-build the application and run it on `localhost` to ensure that all functionality works as expected. You can also delete the `ajs-upgraded-providers.ts` file since it is now redundant.

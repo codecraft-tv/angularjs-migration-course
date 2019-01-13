@@ -1,0 +1,149 @@
+= Single Responsibility
+:imagesdir: images/
+
+In this lecture we will discuss the Single Responsibility rule for Angular applications and see how we can implement the same in our contacts application.
+
+== The Angular Style Guide
+
+The Angular 1 Style Guide is an opinionated style guide for syntax, conventions and structuring of Angular applications.
+
+The style guide consists of an extensive list of best practices and conventions for application development. You can implement as many or as little of this as you want; Our focus will be on understanding the Single Responsibility rule and how it can be implemented into our application.
+
+== What is Single Responsibility?
+
+The Single Responsibility rule defines _one component per file_ where each file is recommended to be less than 400 lines of code. This promotes,
+
+* Easier unit testing and mocking
+* Code readability and easier maintenance
+* Less bugs that often arise when combining components in a file where they may share variables, create unwanted closures, or unwanted coupling with dependencies.
+
+== An Example
+Lets take a look at the `controller.js` file in our contacts application and see how we can apply the Single Responsibility rule to break it down into separate component files.
+
+.controller.js
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .controller("PersonCreateController", function(
+    $scope,
+    $state,
+    ContactService
+  ) {
+    $scope.contacts = ContactService;
+    $scope.person = {};
+
+    $scope.save = function() {
+      console.log("createContact");
+      $scope.contacts.createContact($scope.person).then(function() {
+        $state.go("list");
+      });
+    };
+  })
+  .controller("PersonEditController", function(
+    $scope,
+    $stateParams,
+    $state,
+    ContactService
+  ) {
+    $scope.contacts = ContactService;
+    $scope.person = $scope.contacts.getPerson($stateParams.email);
+
+    $scope.save = function() {
+      $scope.contacts.updateContact($scope.person).then(function() {
+        $state.go("list");
+      });
+    };
+
+    $scope.remove = function() {
+      $scope.contacts.removeContact($scope.person).then(function() {
+        $state.go("list");
+      });
+    };
+  })
+  .controller("PersonListController", function($scope, ContactService) {
+    $scope.contacts = ContactService;
+  })
+  .controller("SearchController", function($scope, ContactService) {
+    $scope.contacts = ContactService;
+
+    $scope.loadMore = function() {
+      $scope.contacts.loadMore();
+    };
+  });
+----
+
+As you can see, the `controller.js` file contains 4 separate controllers in the same file. This violates the single responsibility rule. To fix this, we need to move each of these controllers into separate files.
+
+=== Applying the Single Responsibility Rule
+
+* *Step 1:* Create a folder called `controllers` inside the `app` folder.
+* *Step 2:* Create a file named `person-create.controller.js` inside the `controllers` folder.
+* *Step 3:* Move the `PersonCreateController` code block from the `controllers.js` file to the newly created `person-create-controller.js` file.
+
+.person-create.controller.js
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .controller("PersonCreateController", function(
+    $scope,
+    $state,
+    ContactService
+  ) {
+    $scope.contacts = ContactService;
+    $scope.person = {};
+
+    $scope.save = function() {
+      console.log("createContact");
+      $scope.contacts.createContact($scope.person).then(function() {
+        $state.go("list");
+      });
+    };
+  });
+----
+* *Step 4:* Repeat the same procedure for the remaining 3 controllers so that we have 4 separate controller files for each controller. Your `controllers` folder should look similar to Figure 1.
+
+[#img-component-diagram]
+.Re-factored controllers folder
+image::11-img-001.png[]
+
+* *Step 5:* Go to the `index.html` file and replace the following code:
+
+[source,html]
+----
+<script src="app/controllers.js"></script>
+----
+
+with:
+
+[source,html]
+----
+<script src="app/controllers/person-create.controller.js"></script>
+<script src="app/controllers/person-list.controller.js"></script>
+<script src="app/controllers/person-edit.controller.js"></script>
+<script src="app/controllers/search.controller.js"></script>
+----
+
+to import the newly added controller files in to the application.
+
+* *Step 6:* Re-build your application and visit it on `http://localhost:5000` to make sure everything works as expected.
+
+== Exercise
+
+Follow the same procedure to breakdown the `directives`, `filters` and `services` into individual component files. Once you are done, check your code against the `step-2` branch for verification! Your file directory should look similar to Figure 2:
+
+[#img-component-diagram]
+.Re-factored component file structure
+image::11-img-002.png[]
+
+
+== In summary..
+
+* The Angular Style Guide consists of an extensive list of best practices and conventions for application development.
+
+* The first rule of the style guide is the Single Responsibility rule which defines one component per file.
+
+* Benefits of following the single responsibility rule ranges from easier unit testing and mocking to better code readability and maintenance.
+
+* All of this contributes towards a much, much easier process of migration!

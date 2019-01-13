@@ -1,0 +1,282 @@
+= Converting directives to components
+:toc:
+:toclevels: 5
+
+In the previous lecture we made sure our application was upgraded to _at least_ AngularJS 1.5, which allows us to take advantage of AngularJS _components_. In this lecture we are going _component'ify_ our AngularJS application, which specifically means converting our controllers and directives into AngularJS components. So lets get started!
+
+== The card component
+
+We will start by converting the `card.directive.ts` directive to a component.
+
+.card.directive.ts
+[source,javascript]
+----
+import * as angular from 'angular';
+
+angular.module("codecraft").directive("ccCard", function() {
+  return {
+    restrict: "AE",
+    templateUrl: "templates/card.html",
+    scope: {
+      user: "="
+    },
+    controller: function($scope, ContactService) {
+      $scope.isDeleting = false;
+      $scope.deleteUser = function() {
+        $scope.isDeleting = true;
+        ContactService.removeContact($scope.user).then(function() {
+          $scope.isDeleting = false;
+        });
+      };
+    }
+  };
+});
+----
+
+Before we begin, create a folder called `components` in the `src/app/` directory. This will hold all the components of our application. Next, create a file called `card.component.ts` for our card directive.
+
+=== Component definition object
+
+A component in AngularJS is defined by a _component definition object_, which specifies the component configuration via a set of properties.
+
+Lets add the following code to our `card.component.ts` file to initialize our component definition object:
+
+.card.component.ts
+[source,javascript]
+----
+let CardComponent = {
+  //component properties will be defined here
+};
+----
+
+==== Component definition object properties
+Now we need to configure our component. We can do this by adding the following properties to our component definition object:
+
+===== selector
+The `selector` property will have the same value as the directive's selector property value like so:
+
+.card.component.ts - selector property
+[source,javascript]
+----
+let CardComponent = {
+  selector: "ccCard"
+};
+----
+
+===== template
+The `template` property can either contain in-line HTML or a URL pointing to the template's HTML code like in our directive code. I personally find in-line HTML easier to deal with during the process of migration, but feel free to go with your own preference.
+
+The updated configuration object will now look like this:
+
+.card.component.ts - template property
+[source,html]
+----
+let CardComponent = {
+  selector: "ccCard",
+  template: `
+    <div class="col-md-6">
+      <div class="well well-sm">
+        <div class="row">
+          <div class="col-md-4">
+            <img ng-src="{{ $ctrl.user.photo | defaultImage  }}"
+                 alt=""
+                 class="img-rounded img-responsive" />
+          </div>
+          <div class="col-md-8">
+            <h4>{{ $ctrl.user.name }}
+              <i class="fa"
+                 ng-class="{'fa-female':$ctrl.user.sex == 'F', 'fa-male': $ctrl.user.sex == 'M'}"></i>
+            </h4>
+            <small>{{ $ctrl.user.city }}, {{ $ctrl.user.country }}
+              <i class="fa fa-map-marker"></i>
+            </small>
+            <p>
+              <i class="fa fa-envelope-o"></i>
+              {{ $ctrl.user.email }}
+              <br />
+              <i class="fa fa-gift"></i>
+              {{ $ctrl.user.birthdate | date:"longDate"}}
+            </p>
+
+
+            <a class="btn btn-default btn-sm"
+               ui-sref="edit({email:$ctrl.user.email})">
+              <i class="fa fa-pencil"></i>
+              &nbsp;Edit
+            </a>
+
+            <a class="btn btn-danger btn-sm"
+               ladda="$ctrl.isDeleting"
+               ng-click="$ctrl.deleteUser()">
+              <i class="fa fa-trash"></i>
+              &nbsp;Delete
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+};
+----
+
+
+===== bindings
+The `bindings` property will have the same syntax as the `scope` property in our `card` directive like so:
+
+.card.component.ts - bindings property
+[source,javascript]
+----
+let CardComponent = {
+  selector: "ccCard",
+  template: `<div>
+      <!--
+        //in-line html code from card.html
+      -->
+    </div>`,
+  bindings: {
+    user: "="
+  }
+};
+----
+
+===== controller
+The `controller` property will be a syntactically equivalent `class` representation of the `controller` function in our directive. This will be advantageous later on when we migrate this component to Angular.
+
+TIP: Checkout my https://codecraft.tv/courses/angular/es6-typescript/classinterface/[free resource] to understand the nuts and bolts of Typescript and ES6 classes
+
+.card.component.ts - controller property
+[source,javascript]
+----
+let CardComponent = {
+  ...
+  controller: class CardController {
+    // <1>
+    private contacts;
+    private isDeleting;
+    private user;
+
+    // <2>
+    constructor(ContactService) {
+      this.contacts = ContactService;
+      this.isDeleting = false;
+    }
+
+    // <3>
+    deleteUser() {
+      this.isDeleting = true;
+      this.contacts.removeContact(this.user).then(() => {
+        this.isDeleting = false;
+      })
+    }
+    ...
+  }
+};
+----
+
+<1> We have extracted the properties in the directive's controller function as `private` variables.
+
+<2> The constructor takes `ContactService` as a parameter to initialize the `contacts` variable to be used as a reference later on.
+
+<3> The `deleteUser` function deletes a contact and sets the `isDeleting` flag to `false`, preserving the same logic that we had in our directive's `deleteUser` function.
+
+=== Component registration
+
+For components to be used in our application, they need to be registered using the ``.component()`` method of an AngularJS module (returned by `angular.module()`). The method takes two arguments:
+
+* The name of the Component.
+
+* The Component definition object.
+
+Add the following code to the `card.component.ts` file to register the `CardComponent` component:
+
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .component(CardComponent.selector, CardComponent);
+----
+
+=== "Controller as" syntax
+The "Controller as" syntax provides a way for us to access properties and methods of a controller via the `this` keyword. It eliminates ambiguity and provides clear property references in nested scopes.
+
+We can modify the in-line HTML of our card component's template property to use the "controller as" syntax, by prefixing `$ctrl.` to all usages of controller properties.
+
+The final `card.component.ts` file should be as follows:
+
+[source,javascript]
+----
+import * as angular from 'angular';
+
+let CardComponent = {
+  selector: "ccCard",
+  template: `
+    <div class="col-md-6">
+      <div class="well well-sm">
+        <div class="row">
+          <div class="col-md-4">
+            <img ng-src="{{ $ctrl.user.photo | defaultImage  }}"
+                 alt=""
+                 class="img-rounded img-responsive" />
+          </div>
+          <div class="col-md-8">
+            <h4>{{ $ctrl.user.name }}
+              <i class="fa"
+                 ng-class="{'fa-female':$ctrl.user.sex == 'F', 'fa-male': $ctrl.user.sex == 'M'}"></i>
+            </h4>
+            <small>{{ $ctrl.user.city }}, {{ $ctrl.user.country }}
+              <i class="fa fa-map-marker"></i>
+            </small>
+            <p>
+              <i class="fa fa-envelope-o"></i>
+              {{ $ctrl.user.email }}
+              <br />
+              <i class="fa fa-gift"></i>
+              {{ $ctrl.user.birthdate | date:"longDate"}}
+            </p>
+
+
+            <a class="btn btn-default btn-sm"
+               ui-sref="edit({email:$ctrl.user.email})">
+              <i class="fa fa-pencil"></i>
+              &nbsp;Edit
+            </a>
+
+            <a class="btn btn-danger btn-sm"
+               ladda="$ctrl.isDeleting"
+               ng-click="$ctrl.deleteUser()">
+              <i class="fa fa-trash"></i>
+              &nbsp;Delete
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  bindings: {
+    user: "="
+  },
+  controller: class CardController {
+    private contacts;
+    private isDeleting;
+    private user;
+
+    constructor(ContactService) {
+      this.contacts = ContactService;
+      this.isDeleting = false;
+    }
+
+    deleteUser() {
+      this.isDeleting = true;
+      this.contacts.removeContact(this.user).then(() => {
+        this.isDeleting = false;
+      })
+    }
+  }
+};
+
+angular
+  .module("codecraft")
+  .component(CardComponent.selector, CardComponent);
+----

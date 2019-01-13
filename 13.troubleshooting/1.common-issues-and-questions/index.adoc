@@ -1,0 +1,109 @@
+= Common Issues and Questions
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+== Lecture Objective
+In this lecture we will cover a few key troubleshooting issues and see how we can solve them during our migration from AngularJS to Angular.
+
+== $scope.$watch
+The first common issue that we will deal with is how to handle `$scope.$watch`, which allows our application to listen for `$scope` changes.
+
+I personally believe that extensive use of `$scope.$watch` can be a sign of poor architecture. However, it still should be addressed in our migration process as modern Angular does _not_ have this concept at all.
+
+=== The Form
+I used to work in a firm where we constantly had to deal with issues from a form component. Eventually, this turned into a running joke and this form component became, "The Form".
+
+To better understand the issues of this form, lets look at its architecture.
+
+[#img-component-diagram]
+.Architecture of the form
+image::46-img-001.png[]
+
+There were 3 controller levels as illustrated in Figure 1. The lowest level of control contained the form which used scope inheritance to read the required properties from the outer levels.
+
+The properties itself were being set via asynchronous function calls, so you never knew when data would be set. The input fields of the form were bound to `$scope` variables with scope watchers set to listen to any changes.
+
+This behavior is illustrated in Figure 2, where setting a given property in the form would trigger a scope watch that would then proceed to set another property and so on.
+
+[#img-component-diagram]
+.Property setting
+image::46-img-002.png[]
+
+A side effect of this was that some of our test cases would sporadically fail. This was because of the asynchronous nature of some of the watchers and dependencies, and is a classic example of _chaos theory_.
+
+=== Angular Observables
+The Angular replacement for this comes in the form of `observables`. The essential idea of re-writing your `$scope.$watch` is captured in the following code snippet:
+
+[source, javascript]
+----
+this.form
+  .valueChanges // <1>
+  .filter(v => this.form.valid) // <2>
+  .debounceTime(400) // <3>
+  .distinctUntilChanged() // <4>
+  .map(v => {...}) // <5>
+  .subscribe(v => {...}); // <6>
+----
+
+<1> This returns an `observable` that emits the latest values of the form as a `JSON` object. Every time the form changes, the changes will be sent through this function chain.
+
+<2> Ensures only valid form changes are sent through the chain
+
+<3> Ensures only changes with at least a delay of 400 ms between each other are passed through the chain.
+
+<4> Ensures that only actual changes in the form are passed through the chain.
+
+<5> Contains a callback function that is called every time the values in the form are changed.
+
+<6> Allows us to link the form changes to an API or something similar.
+
+This is a very high-level overview of what you can do to replace your `$scope.$watch` usages in Angular.
+
+== Emit & Broadcast
+Both `$broadcast()` and `$emit()` allow you to raise an event in your AngularJS application, using the event system of `$scope` and `$rootScope`. Again, there is no equivalent to this in modern Angular. If you are looking for a permanent fix during your migration to Angular, you will need an architectural level solution.
+
+However, when you are in the process of migration, there is a temporary solution that can be applied by temporarily _upgrading_ the AngularJS `$rootScope` service. This can be done as follows:
+
+.ajs-upgraded-providers.ts - $rootScope upgrade code
+[source, javascript]
+----
+export const RootScope = new InjectionToken("RootScope");
+
+export function rootScopeServiceFactory(i: any) {
+  return i.get('$rootScope');
+}
+export const rootScopeServiceProvider = {
+  provide: RootScope,
+  useFactory: rootScopeServiceFactory,
+  deps: ['$injector']
+};
+----
+
+Then, add the `rootScopeServiceProvider` to the list of `providers` in the `NgModule` like so:
+[source, javascript]
+----
+@NgModule({
+  providers: [
+    rootScopeServiceProvider
+  ]
+})
+export class AppModule{
+
+}
+----
+
+Similar to our previously upgraded services, this code creates an `InjectionToken` and upgrades the `$rootScope` from the AngularJS service. Adding this to the list of `providers` in the `NgModule` makes it available to the rest of the application.
+
+To use this in our Angular component, we can _inject_ the `rootScope` via the constructor and use it using the `this.rootScope.` reference like so:
+
+[source, javascript]
+----
+constructor(@Inject(RootScope) private rootScope){}
+
+otherFunc(){
+  this.rootScope.$emit(...);
+  this.rootScope.$broadcast(...);
+  this.rootScope.$on(...)
+}
+----

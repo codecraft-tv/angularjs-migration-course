@@ -1,0 +1,292 @@
+= Migrate SearchComponent
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+In this section we are going to work on migrating our AngularJS components to Angular, and discuss how to deal with things like filters and third party libraries used within our components during the migration process. So lets get started!
+
+==== Component visualization
+With the migration of the `Resource` and `Service` entities to Angular, our application component diagram now looks like this:
+
+[#img-component-diagram]
+.Current contacts application component diagram
+image::32-img-001.jpg[]
+
+The next step is to migrate our components. We will start by migrating (and downgrading to maintain compatibility!) our `Search` component so that our application component diagram will look like so:
+
+[#img-component-diagram]
+.Contacts application component diagram after the Search component migration
+image::32-img-002.jpg[]
+
+==== Search component declaration
+
+The `Search` component code is contained within the `search.component.ts` file. Lets start by adding the following code to `search.component.ts`. This will form the basis of our component class.
+
+[source, javascript]
+----
+export class SearchComponent {
+    private contacts = null;
+
+    constructor(ContactService) {
+      this.contacts = ContactService;
+    }
+}
+----
+
+Next, create the `declarations` and `entryComponents` properties in the `NgModule` and add the `SearchComponent` like so:
+
+[source, javascript]
+----
+@NgModule({
+  imports: [
+  ...
+  ],
+  providers: [
+  ...
+  ],
+  declarations: [
+    SearchComponent
+  ],
+  entryComponents: [
+    SearchComponent
+  ]
+})
+----
+
+NOTE: You only need to add a component to the `entryComponents` property if you plan to downgrade it.
+
+==== The @Component decorator
+The `@Component` decorator marks a class as an Angular component and provides configuration meta-data that determines how the component should be processed, instantiated, and used at runtime.
+
+This decorator takes two properties, `selector` and `template` which we have already defined for our `SearchComponent` during the Component'ification step previously. Copy that same code and add the `@Component` decorator to our `SearchComponent` class like so:
+
+[source, javascript]
+----
+...
+@Component({
+  selector: 'search',
+  template: `
+    <form class="navbar-form navbar-left">
+
+      <div class="form-group">
+        <input type="text"
+               class="form-control"
+               id="name"
+               ng-model="$ctrl.contacts.search"
+               ng-model-options="{ debounce: 300 }"
+               placeholder="Search name..."
+               ng-change="$ctrl.contacts.doSearch()"
+        />
+      </div>
+
+      <div class="form-group">
+        <select class="form-control"
+                ng-model="$ctrl.contacts.sorting"
+                ng-change="$ctrl.contacts.doSearch()">
+          <option value="name">Name</option>
+          <option value="email">Email</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <select class="form-control"
+                ng-model="$ctrl.contacts.ordering"
+                ng-change="$ctrl.contacts.doSearch()">
+          <option value="ASC">ASC</option>
+          <option value="DESC">DESC</option>
+        </select>
+      </div>
+    </form>
+    `
+})
+export class SearchComponent {
+    private contacts = null;
+
+    constructor(ContactService) {
+      this.contacts = ContactService;
+    }
+}
+...
+----
+NOTE: Make sure to import the `Component` using `import { Component } from "@angular/core";`
+
+==== Injecting ContactService
+To inject the `ContactService` into our components, add the following imports:
+[source, javascript]
+----
+import { Component, Inject } from "@angular/core";
+import { ContactService } from "../services/contact.service";
+----
+
+and modify the constructor to manually _inject_ the `ContactService` service like so:
+
+[source, javascript]
+----
+...
+constructor(@Inject(ContactService) private contacts: ContactService) {
+}
+...
+----
+
+NOTE: At this point, we can go ahead and remove the older `SearchComponent` initialization code in our `search.component.ts` file
+
+==== Model driven forms
+
+Consider the template code in our `SearchComponent` decorator. It contains a template-driven AngularJS form that uses AngularJS directives (such as `ng-model-options`) for functionality. Lets see how we can replace this in favor of the more modern, model-driven Angular forms.
+
+First add the `FormsModule` and the `ReactiveFormsModule` to the `NgModule` like so:
+
+[source, javascript]
+----
+....
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+
+@NgModule({
+imports: [
+    BrowserModule,
+    UpgradeModule,
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule
+  ]
+  ...
+})
+...
+----
+
+Now lets create the form `model` to hold our form logic in our `SearchComponent` like so:
+
+.SearchComponent form model
+[source, javascript]
+----
+import { FormGroup, FormControl } from '@angular/forms';
+...
+export class SearchComponent {
+
+  protected myform: FormGroup;
+
+  constructor( @Inject(ContactService) private contacts: ContactService) {
+    this.myform = new FormGroup({
+      search: new FormControl(),
+      sorting: new FormControl('name'),
+      ordering: new FormControl('ASC')
+    });
+  }
+}
+...
+----
+
+To link this model to our template code, add the "myForm" `formGroup` to the `<form>` tag like so:
+
+[source, html]
+----
+<form class="navbar-form navbar-left" [formGroup]="myform">
+----
+
+To link the individual form controls (`search`, `sorting`, `ordering`) to the form, replace the AngularJS `ng-` directives in the template code with the `formControlName` attribute like so:
+
+.search
+[source, html]
+----
+<div class="form-group">
+  <input type="text"
+         class="form-control"
+         id="name"
+         placeholder="Search name..."
+         formControlName="search"
+  />
+</div>
+----
+
+.sorting
+[source, html]
+----
+<div class="form-group">
+  <select class="form-control"
+          formControlName="sorting">
+    <option value="name">Name</option>
+    <option value="email">Email</option>
+  </select>
+</div>
+----
+
+.ordering
+[source, html]
+----
+<div class="form-group">
+  <select class="form-control"
+          formControlName="ordering">
+    <option value="ASC">ASC</option>
+    <option value="DESC">DESC</option>
+  </select>
+</div>
+----
+
+=== Downgrading the Search component
+To maintain compatibility, we will need to downgrade our `SearchComponent`. The downgrade syntax for a component is similar to that of a `Service` which we saw in the previous section.
+
+Import the `downgradeComponent` function like so:
+
+[source, javascript]
+----
+import { downgradeComponent } from "@angular/upgrade/static";
+----
+
+and modify the component registration code like so:
+
+[source, javascript]
+----
+angular
+  .module('codecraft')
+  .directive("search", downgradeComponent({
+    component: SearchComponent
+}));
+----
+
+Now if you build and run your application, you may observe that all the functionality works as expected, except for the `Search` component. This is because even though we have re-written our component in Angular, we are yet to implement its functionality, which is what we will do next!
+
+
+=== Hooking things up
+Our AngularJS template-driven form used the `ng-model-options` directive to add debouncing functionality to our `Search` component. Although there is no direct analogy in Angular, we will implement the same functionality using the `rxjs` library and the `debounce` operator.
+
+Add the following `ngOnInit` function  (and the required imports) to our `SearchComponent` class:
+
+.required imports
+[source, javascript]
+----
+import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/distinctUntilChanged';
+----
+
+.ngOnInit function
+[source, javascript]
+----
+ngOnInit() {
+  this.myform
+      .valueChanges
+      .debounceTime(400) // <1>
+      .distinctUntilChanged() // <2>
+      .do(console.log) // <3>
+      .subscribe(({sorting, ordering, search}) => { // <4>
+        this.contacts.sorting = sorting;
+        this.contacts.ordering = ordering;
+        this.contacts.search = search;
+        this.contacts.doSearch();
+      });
+}
+----
+
+NOTE: You will also need to change the access modifiers of `contacts.sorting`, `contacts.ordering`, `contacts.search` from `private` to `public`
+
+The functionality of the above function chain is as follows:
+
+<1> Ensures a search will only be triggered if the time since the previous search call is _at least_ 400 ms.
+
+<2> Ensures that only an actual change will trigger a search.
+
+<3> A console.log statement used for debugging purposes
+
+<4> Subscribes to the `sorting`, `ordering`, and `search` parameters and calls `doSearch` on our contact service.
+
+With this, we complete the migration of the `SearchComponent` from AngularJS to Angular!

@@ -1,0 +1,70 @@
+= Remove AngularJS
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+The objective of this step is to completely clean up our Angular application and finalize the migration. In this lecture we will go through our application code and remove any references we still have to AngularJS. So lets get started!
+
+== Why should we do this?
+You maybe wondering why should we be bothered about older AngularJS code? Well, there are a couple of reasons. *First of all*, your application is going to look much more cleaner.
+
+*Secondly*, when we build our application, `webpack` will include all the specified imports in the final `bundle.js` file. If there are older AngularJS modules still being imported, this will result in a `bundle.js` file that is a lot larger than it should be.
+
+*Finally*, if the `package.json` file still contains redundant AngularJS modules, an `npm install` will install all these modules as well which is obviously unnecessary.
+
+== Cleaning up the application code
+To start, lets first delete the following files/folders:
+
+1. *app.main.ts* - Contains AngularJS bootstrapping code that is not used anymore.
+2. *filters folder* - Contains a single AngularJS filter that we replaced by an Angular `pipe`. Again, this is not used anymore.
+
+Next, remove the following imports from the `main.ts` file:
+
+.main.ts redundant imports
+[source]
+----
+import 'angular';
+import 'angular-resource';
+import 'angular-animate';
+import 'ng-infinite-scroll';
+import 'angular-spinner';
+import 'angular-auto-validate/dist/jcs-auto-validate';
+import 'angular-ladda';
+import 'angular-strap';
+import 'angularjs-toaster';
+import 'angular-ui-router';
+
+import './app.main';
+import './services';
+import './filters';
+import './components';
+import './app.routes';
+...
+----
+
+Finally, remove the following AngularJS package dependencies from the `package.json` file:
+
+.package.json redundant dependencies
+[source]
+----
+{
+...
+  "dependencies": {
+    ...
+    "angular": "1.6.6",
+    "angular-animate": "1.6.6",
+    "angular-auto-validate": "^1.19.0",
+    "angular-in-memory-web-api": "~0.5.0",
+    "angular-ladda": "^0.4.3",
+    "angular-resource": "1.6.6",
+    "angular-spinner": "^1.0.1",
+    "angular-strap": "^2.3.12",
+    "angular-ui-router": "^0.4.2",
+    ...
+  },
+...
+----
+
+Re-build the application and run it on `localhost` to ensure that all application functionality still works as expected. We have now removed all AngularJS references from our Angular application!
+
+NOTE: As we have already done quite a bit of cleaning up along the way, there was not much work to be done in this lecture. However, there is no harm in revisiting your application code to ensure that all references to AngularJS (including imports, bootstrapping code and component downgrade logic) have been removed.

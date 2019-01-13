@@ -1,0 +1,303 @@
+= Converting controllers to components
+:toc:
+:toclevels: 5
+
+In the previous lecture we learned how to convert an AngularJS directive into a component. In this lecture we are going to see how we can do the same with our AngularJS controllers. So lets get started!
+
+== The person-edit component
+
+We will start by converting the `person-edit.controller.ts` controller to a component.
+
+.person-edit.controller.ts
+[source,javascript]
+----
+import * as angular from 'angular';
+
+angular
+  .module("codecraft")
+  .controller("PersonEditController", function(
+    $scope,
+    $stateParams,
+    $state,
+    ContactService
+  ) {
+    $scope.contacts = ContactService;
+    $scope.person = $scope.contacts.getPerson($stateParams.email);
+
+    $scope.save = function() {
+      $scope.contacts.updateContact($scope.person).then(function() {
+        $state.go("list");
+      });
+    };
+
+    $scope.remove = function() {
+      $scope.contacts.removeContact($scope.person).then(function() {
+        $state.go("list");
+      });
+    };
+  });
+----
+
+=== Component definition object
+
+As before, our controller component will require a component definition object to specify the component configuration.
+
+Create a file named `person-edit.component.ts` in the `src/app/controllers/` folder and add the following code to initialize the component definition object:
+
+.person-edit.component.ts
+[source,javascript]
+----
+let PersonEditComponent = {
+  //component properties will be defined here
+};
+----
+
+==== Component definition object properties
+Now lets configure our component by following a similar pattern as we did with our directives.
+
+===== selector
+Add the following `selector` property to the configuration object. The `camel-cased` `selector` property value will map to a `kebab-case` tag in our html template:
+
+.person-edit.component.ts - selector property
+[source,javascript]
+----
+let PersonEditComponent = {
+  selector: "personEdit" //maps to <person-edit>
+};
+----
+
+===== template
+Unlike directives, our controllers' template files have been linked using separate routing configurations in `app.routes.ts` like so:
+
+.app.routes.ts - person edit controller
+[source,javascript]
+----
+.state("edit", {
+        url: "/edit/:email",
+        views: {
+          main: {
+            templateUrl: "templates/edit.html",
+            controller: "PersonEditController"
+          }
+        }
+      })
+----
+
+The html template for the `person-edit` controller will be in the `edit.html` file. We can place this in-line, as we did with our directives component in the previous lecture like so:
+
+.person-edit.component.ts - template property
+[source,javascript]
+----
+let PersonEditComponent = {
+  selector: "personEdit",
+  template: `
+    <div class="col-md-8 col-md-offset-2">
+    <form class="form-horizontal"
+          ng-submit="save()"
+          novalidate>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+
+          {{mode}}
+
+          <div class="pull-right">
+            <button class="btn btn-primary btn-sm"
+                    ladda="contacts.isSaving"
+                    type="submit">Save
+            </button>
+
+            <button class="btn btn-danger btn-sm"
+                    ladda="contacts.isDeleting"
+                    ng-click="remove()">Delete
+            </button>
+          </div>
+          <div class="clearfix"></div>
+
+        </div>
+        <div class="panel-body">
+
+          <ng-include src="'templates/form.html'"></ng-include>
+
+        </div>
+      </div>
+    </form>
+  </div>
+`
+};
+----
+
+===== bindings
+Since we are not passing any information into this controller component, we can set an empty object for the `bindings` property like so:
+
+.person-edit.component.ts - bindings property
+[source,javascript]
+----
+let PersonEditComponent = {
+  selector: "personEdit",
+  template: `<div>
+      <!--
+        //in-line html code from edit.html
+      -->
+    </div>`,
+  bindings: {}
+};
+----
+
+===== controller
+The controller property will contain a class-based replication of the callback function logic, passed into the `.controller` function in the `person-edit.controller.ts` controller. (Refer the `person-edit.controller.ts` code snippet above)
+
+The controller logic to be replicated includes:
+
+* *functions*: save, remove
+* *properties*: contacts, person
+* *injected parameters*
+
+The converted `controller` class will be as follows:
+
+.person-edit.component.ts - controller property
+[source,javascript]
+----
+let PersonEditComponent = {
+  ...
+  controller: class PersonEditController {
+  // <1>
+  public person = {};
+  public contacts;
+
+  // <2>
+  private $state;
+  private $stateParams;
+
+  // <3>
+  constructor($stateParams, $state, ContactService) {
+    this.$stateParams = $stateParams;
+    this.$state = $state;
+    this.contacts = ContactService;
+    this.person = this.contacts.getPerson(this.$stateParams.email);
+  }
+
+  // <4>
+  save() {
+    this.contacts.updateContact(this.person).then(() => {
+      this.$state.go("list");
+    });
+  };
+
+  remove() {
+    this.contacts.removeContact(this.person).then(() => {
+      this.$state.go("list");
+    });
+  };
+
+}
+    ...
+  }
+};
+----
+
+<1> properties used outside of the `class`. IE: within the `template` code.
+
+<2> properties used only within the `class`.
+
+<3> Constructor initialization of the declared `public` and `private` variables via injected parameters.
+
+<4> Implementation changes to use `ES6` arrow functions and the `this` keyword instead of `$scope`.
+
+=== Component registration
+
+As with our directive component, component registration can be done using the `.component()` method of the `codecraft` AngularJS module:
+
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .component(PersonEditComponent.selector, PersonEditComponent);
+----
+
+=== "Controller as" syntax
+As with our directive component, we can modify the in-line HTML of the template property to use the "controller as" syntax, by prefixing `$ctrl.` to all usages of controller properties within it.
+
+The final `person-edit.component.ts` file should be as follows:
+
+.person-edit.component.ts
+[source,javascript]
+----
+import * as angular from 'angular';
+
+let PersonEditComponent = {
+  selector: "personEdit", // <person-edit>
+  template: `
+<div class="col-md-8 col-md-offset-2">
+  <form class="form-horizontal"
+        ng-submit="$ctrl.save()"
+        novalidate>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+
+        {{mode}}
+
+        <div class="pull-right">
+          <button class="btn btn-primary btn-sm"
+                  ladda="$ctrl.contacts.isSaving"
+                  type="submit">Save
+          </button>
+
+          <button class="btn btn-danger btn-sm"
+                  ladda="$ctrl.contacts.isDeleting"
+                  ng-click="$ctrl.remove()">Delete
+          </button>
+        </div>
+        <div class="clearfix"></div>
+
+      </div>
+      <div class="panel-body">
+
+        <ng-include src="'templates/form.html'"></ng-include>
+
+      </div>
+    </div>
+  </form>
+</div>
+  `,
+  bindings: {},
+  controller: class PersonEditController {
+
+    public person = {};
+    public contacts;
+
+    private $state;
+    private $stateParams;
+
+    constructor($stateParams, $state, ContactService) {
+      this.$stateParams = $stateParams;
+      this.$state = $state;
+      this.contacts = ContactService;
+      this.person = this.contacts.getPerson(this.$stateParams.email);
+    }
+
+    save() {
+      this.contacts.updateContact(this.person).then(() => {
+        this.$state.go("list");
+      });
+    };
+
+    remove() {
+      this.contacts.removeContact(this.person).then(() => {
+        this.$state.go("list");
+      });
+    };
+
+  }
+
+};
+
+angular
+  .module("codecraft")
+  .component(PersonEditComponent.selector, PersonEditComponent);
+----
+
+== What's next?
+
+Now that we have successfully converted a directive and a controller to a component, you can go ahead and convert the rest of the directives and controllers to this new class-based syntax.
+
+Once you have completed that, use the `step-5` branch of the `angularjs-migration` repository for verification.

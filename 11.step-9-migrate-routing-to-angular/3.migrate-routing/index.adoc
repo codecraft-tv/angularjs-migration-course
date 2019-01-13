@@ -1,0 +1,292 @@
+= Migrate Routing
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+We have now removed dual booting and converted our application to bootstrap in Angular. A side-effect of this is the AngularJS UI-Router is now redundant. In this lecture, we will see how to replace the AngularJS `UI-Router` with Angular Router.
+
+== Adding Angular Router
+Before we start, add the `<base href="/">` tag to the beginning of the `head` element in your `index.html` file. This is mandatory to handle routing in Angular.
+
+Consider the `app-root.component.ts` file. This contains AngularJS UI-Router directives such as `ui-view`, `ui-sref-active` used for routing. Lets start by converting some of these into Angular Router.
+
+==== ui-sref-active directive
+`ui-sref-active` is a directive working alongside `ui-sref` to add classes to an element based on the state of the `ui-sref` directive. This can be replaced with the Angular equivalent `RouterLinkActive` directive like so:
+
+[source, html]
+----
+...
+  <li [routerLinkActive]="['active']" >
+    ...
+  </li>
+  <li [routerLinkActive]="['active']">
+    ...
+  </li>
+...
+----
+
+==== ui-view directive
+The `ui-view` directive specifies where different templates should be injected into the application using the configurations specified in the `app.routes.ts` file.
+
+For example, in the `app-root.component.ts` file, the following elements:
+----
+<div ui-view="search"></div>
+...
+<div ui-view="main"></div>
+----
+
+will have following template code injected into it as specified in the `app.routes.ts` configuration:
+
+[source, javascript]
+----
+...
+$stateProvider
+  .state("list", {
+    url: "/",
+    views: {
+      main: {
+        template: "<person-list></person-list>",
+      },
+      search: {
+        template: "<search></search>",
+      }
+    }
+  }
+...
+----
+
+The equivalent in Angular is called `RouterOutlet` which acts as a placeholder that Angular dynamically fills based on the current router state.
+
+Replace the above `div` elements containing the `ui-view` directive with `RouterOutlet` like so:
+
+[source, html]
+----
+...
+<router-outlet name="header"></router-outlet>
+...
+<router-outlet></router-outlet>
+...
+----
+
+Notice we have one unnamed router outlet for our `main` template and another (renamed as `header`) for our `search` template.
+
+==== ui-sref directive
+The `ui-sref` directive binds a link to a state. If the state has an associated URL, the directive will automatically generate and update the `href` attribute using the `$state.href()` method. The equivalent in Angular is `RouterLink` which lets you link specific routes in your application.
+
+In our template code in `app-root.component.ts`, we have the following `ui-sref` references:
+[source, html]
+----
+...
+<a ui-sref="list">Search</a>
+...
+<a ui-sref="create">Create</a>
+...
+----
+we can replace the `Search` link (which relates to the base URL of the application) with the following `RouterLink` equivalent:
+[source, html]
+----
+<a [routerLink]="[{outlets: {primary: 'list', header:'search'}}]">Search</a>
+----
+
+Similarly, we can replace the `ui-sref="create"` directive such that, when we navigate to the `Create` page in our application, we do not display the search functionality in the header.
+
+We can accomplish this like so:
+
+[source, html]
+----
+<a [routerLink]="[{outlets: {primary: 'create', header: null}}]">Create</a>
+----
+
+The above code loads the `person-create` component in our primary outlet, while nothing is loaded into the `header` router outlet, which is the required behavior for our application. The concept behind this is called Named Router-Outlets which lets us target multiple router outlets using a single `routerLink`.
+
+== Modifying application routes
+Next, we will replace the older AngularJS route configurations with the following Angular routing code in `app.routes.ts` like so:
+
+[source, javascript]
+----
+import {Routes} from "@angular/router";
+
+import {SearchComponent} from "./components/search.component";
+import {PersonListComponent} from "./components/person-list.component";
+import {PersonCreateComponent} from "./components/person-create.component";
+import {PersonEditComponent} from "./components/person-edit.component";
+
+export const routes: Routes = [
+  {path: '', redirectTo: '/list(header:search)', pathMatch: 'full'},
+  {path: 'list', component: PersonListComponent},
+  {path: 'search', component: SearchComponent, outlet: 'header'},
+  {path: 'create', component: PersonCreateComponent},
+  {path: 'edit/:email', component: PersonEditComponent},
+];
+----
+
+The above configuration basically specifies which components to load for the corresponding URL path. If an outlet is not specified for a given `path`, then it is loaded onto the `main` outlet.
+
+Notice the root path with the `redirectTo` property. This special syntax redirects to the `list` path while injecting the `search` path into the `header` component.
+
+NOTE: We will not be discussing the routing configuration in detail as this is pretty standard Angular routing code. if you do need a refresher, check out my free https://codecraft.tv/courses/angular/[Angular course] which covers all of this in great detail.
+
+Next, to use the Angular Router in our application, we have to _provide_ the configuration (`app.routes.ts`) and the Angular `RouterModule` in our `NgModule` like so:
+
+[source, javascript]
+----
+...
+import { RouterModule } from "@angular/router";
+...
+import {routes} from './app.routes'
+
+@NgModule({
+  imports: [
+    BrowserModule,
+    UpgradeModule,
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule,
+    LaddaModule,
+    InfiniteScrollModule,
+    ToasterModule,
+    RouterModule.forRoot(routes, {useHash: true})
+  ],
+  providers: [
+    ...
+  ],
+  declarations: [
+    ...
+  ],
+  bootstrap: [
+    ...
+  ]
+})
+...
+----
+
+== Modifying application code to use Angular Router
+Our application code still contains AngularJS UI-Router code. Lets change that.
+
+Consider the `person-edit.component.ts` file:
+[source, javascript]
+----
+...
+export class PersonEditComponent {
+    public mode: string = 'Edit';
+    public person: any;
+
+    //<1>
+    constructor(@Inject(UIRouterStateParams) private $stateParams,
+                @Inject(UIRouterState) private $state,
+                @Inject(ContactService) public contacts: ContactService) {
+      //<2>
+      this.person = this.contacts.getPerson(this.$stateParams.email);
+    }
+
+    save() {
+      this.contacts.updateContact(this.person).then(() => {
+        //<3>
+        this.$state.go("list");
+      });
+    };
+
+    remove() {
+      this.contacts.removeContact(this.person).then(() => {
+        this.$state.go("list");
+      });
+    };
+
+  }
+  ...
+----
+
+* Both the `UIRouterStateParams` and the `UIRouterState` can be replaced by the Angular equivalent `ActivatedRoute` and the `Router` services respectively.
+
+TIP: The `ActivatedRoute` contains information about a route associated with a component loaded in an outlet, while the `Router` manages navigation between different components in the application.
+
+* The equivalent code for `this.$state.go` in Angular is `this.router.navigate([''])`, where the `navigate` function takes as arguments the path to the component to be navigated to.
+
+* The `$stateParams` usage can be replaced with the following code:
+
+[source, javascript]
+----
+this.route.params.subscribe(params => {
+        console.log(params);
+        if (params['email']) {
+          this.person = this.contacts.getPerson(params['email']);
+        }
+      });
+----
+
+This code essentially gives the same functionality we had with our AngularJS implementation.
+
+The `PersonEditComponent` modified to use Angular Router will be like so:
+[source, javascript]
+----
+...
+import {Router, ActivatedRoute} from "@angular/router";
+...
+export class PersonEditComponent {
+    public mode: string = 'Edit';
+    public person: any;
+
+    constructor(private route: ActivatedRoute,
+                private router: Router,
+                @Inject(ContactService) public contacts: ContactService) {
+      this.route.params.subscribe(params => {
+        console.log(params);
+        if (params['email']) {
+          this.person = this.contacts.getPerson(params['email']);
+        }
+      });
+
+    }
+
+    save() {
+      this.contacts.updateContact(this.person).then(() => {
+        this.router.navigate(['']);
+      });
+    };
+
+    remove() {
+      this.contacts.removeContact(this.person).then(() => {
+        this.router.navigate(['']);
+      });
+    };
+
+  }
+  ...
+----
+
+Similarly, we can modify the `person-create.component.ts` file to use the Angular Router for its routing requirements.
+
+Next consider the `card.component.ts` file. Its template code uses an `href` attribute to allow navigation for a person edit like so:
+[source, html]
+----
+...
+[attr.href]="'#!/edit/' +  user.email">
+...
+----
+
+This is again AngularJS UI-Router functionality which we can easily replace with our `RouterLink` attribute like so:
+[source, html]
+----
+...
+[routerLink]="['/edit', user.email]">
+...
+----
+
+
+== Cleaning up the code
+With the migration to Angular Router, most of our previous code related to AngularJS UI-Router is now redundant. Therefore, lets quickly clean it up like so:
+
+* Remove the upgrade code for the `UIRouterStateProvider` and `UIRouterStateParams` from the `ajs-upgraded-provider.ts` file.
+
+* Remove the following component downgrade logic (and the relevant imports!) from our component files:
+
+[source, javascript]
+----
+angular
+    .module('codecraft')
+    .directive('personEdit', downgradeComponent({
+      component: PersonEditComponent
+    }));
+----
+
+Re-build the application and run it on `localhost`. Your application will still not work, and if you access the browser console you may notice an error related to the Toaster module. But this is expected.  We will look at how to fix this in the next lecture!

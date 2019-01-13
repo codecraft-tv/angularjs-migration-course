@@ -1,0 +1,365 @@
+= Modernise code to Typescript/ES6+
+:toc:
+:toclevels: 5
+
+In the previous lecture we modernized the `contact.resource.ts` entity by refactoring the code to an `ES6` class and replacing the `ngResource` module with the `$http` service. In this lecture, we are going to take a look at the `contact.service.ts` entity and see how we can convert it to a more modern, class-based implementation.
+
+== contact.service.ts
+Our `contact.service.ts` file (which is responsible for most of the functionality of our application), has the following implementation:
+
+.contact.service.ts
+[source, javascript]
+----
+import * as angular from 'angular';
+
+angular
+  .module("codecraft")
+  .factory("ContactService", function(Contact, $rootScope, $q, toaster) {
+    var self = {
+      getPerson: function(email) {
+        console.log(email);
+        for (var i = 0; i < self.persons.length; i++) {
+          var obj = self.persons[i];
+          if (obj.email == email) {
+            return obj;
+          }
+        }
+      },
+      page: 1,
+      hasMore: true,
+      isLoading: false,
+      isSaving: false,
+      isDeleting: false,
+      persons: [],
+      search: null,
+      sorting: "name",
+      ordering: "ASC",
+      doSearch: function() {
+        self.hasMore = true;
+        self.page = 1;
+        self.persons = [];
+        self.loadContacts();
+      },
+      doOrder: function() {
+        self.hasMore = true;
+        self.page = 1;
+        self.persons = [];
+        self.loadContacts();
+      },
+      loadContacts: function() {
+        if (self.hasMore && !self.isLoading) {
+          self.isLoading = true;
+
+          var params = {
+            _page: self.page,
+            _sort: self.sorting,
+            _order: self.ordering,
+            q: self.search
+          };
+
+          Contact.query(params, function(data) {
+            console.debug(data);
+            angular.forEach(data, function(person) {
+              self.persons.push(new Contact(person));
+            });
+
+            if (data.length === 0) {
+              self.hasMore = false;
+            }
+            self.isLoading = false;
+          });
+        }
+      },
+      loadMore: function() {
+        if (self.hasMore && !self.isLoading) {
+          self.page += 1;
+          self.loadContacts();
+        }
+      },
+      updateContact: function(person) {
+        var d = $q.defer();
+        self.isSaving = true;
+        person.$update().then(function() {
+          self.isSaving = false;
+          toaster.pop("success", "Updated " + person.name);
+          d.resolve();
+        });
+        return d.promise;
+      },
+      removeContact: function(person) {
+        var d = $q.defer();
+        self.isDeleting = true;
+        var name = person.name;
+        person.$remove().then(function() {
+          self.isDeleting = false;
+          var index = self.persons.indexOf(person);
+          self.persons.splice(index, 1);
+          toaster.pop("success", "Deleted " + name);
+          d.resolve();
+        });
+        return d.promise;
+      },
+      createContact: function(person) {
+        var d = $q.defer();
+        self.isSaving = true;
+        Contact.save(person).$promise.then(function() {
+          self.isSaving = false;
+          self.hasMore = true;
+          self.page = 1;
+          self.persons = [];
+          self.loadContacts();
+          toaster.pop("success", "Created " + person.name);
+          d.resolve();
+        });
+        return d.promise;
+      }
+    };
+
+    self.loadContacts();
+
+    return self;
+  });
+----
+
+=== Class properties
+
+The above implementation of the `contact.service.ts` entity uses the `.factory` method with a callback function that accepts the following arguments:
+
+[source,javascript]
+----
+function(Contact, $rootScope, $q, toaster) {
+  ...
+----
+
+* `$q` (an AngularJS service to help run functions asynchronously) can be replaced with the `Promise` class which is a core Javascript feature available in Typescript.
+
+* `toaster` is an AngularJS port of the non-blocking toaster notification library from JQuery.
+
+* The concept of scopes does not exist in Angular; Hence `$rootScope` can be avoided altogether.
+
+We can start our refactoring process by adding the `ContactService` skeleton class to `contact.service.ts` and _injecting_ the `Contact` and `toaster` services like so:
+
+[source,javascript]
+----
+export class ContactService {
+  private Contact;
+  private toaster;
+
+  constructor(Contact, toaster) {
+    this.Contact = Contact;
+    this.toaster = toaster;
+  }
+}
+----
+
+In addition to these injected properties, our service requires the following set of  `private` properties to maintain its internal state:
+
+[source,javascript]
+----
+export class ContactService {
+  private Contact;
+  private toaster;
+
+  private page = 1;
+  private hasMore = true;
+  private isLoading = false;
+  private isSaving = false;
+  private isDeleting = false;
+  private selectedPerson = null;
+  private persons = [];
+  private search = null;
+  private sorting = 'name';
+  private ordering = 'ASC';
+
+  constructor(Contact, toaster) {
+    this.Contact = Contact;
+    this.toaster = toaster;
+  }
+}
+----
+
+=== Function migration
+Now lets see how we can modify the functions to fit our new `ContactService` class.
+
+==== getPerson
+Consider the `getPerson()` function:
+
+[source,javascript]
+----
+getPerson: function(email) {
+            console.log(email);
+            for (var i = 0; i < self.persons.length; i++) {
+              var obj = self.persons[i];
+              if (obj.email == email) {
+                return obj;
+              }
+            }
+          }
+----
+
+The following changes can be done to this function:
+
+* Changing the `for` loop to use the new `ES6` `for ... of` loop syntax.
+* Replace `self` with `this`
+
+This will give us the following class based representation for the `getPerson()` function:
+
+[source,javascript]
+----
+getPerson(email) {
+  console.log(email);
+  for (let person of this.persons) {
+    if (person.email === email) {
+      return person;
+    }
+  }
+}
+----
+
+==== loadContacts
+
+Consider the `loadContacts()` function:
+
+[source,javascript]
+----
+loadContacts: function() {
+  if (self.hasMore && !self.isLoading) {
+    self.isLoading = true;
+
+   // <1>
+    var params = {
+      _page: self.page,
+      _sort: self.sorting,
+      _order: self.ordering,
+      q: self.search
+    };
+
+    // <2>
+    Contact.query(params, function(data) {
+      console.debug(data);
+      angular.forEach(data, function(person) {
+        self.persons.push(new Contact(person));
+      });
+
+      if (data.length === 0) {
+        self.hasMore = false;
+      }
+      self.isLoading = false;
+    });
+  }
+}
+----
+
+<1> `var` can be replaced with `let`
+
+<2> The `Contact.query` function will now use our `$http` service for querying which is promise-based; Hence the callback implementation can be changed to a promise-based implementation as follows:
+
+[source,javascript]
+----
+this.Contact.query(params).then((res) => {
+        console.debug(res);
+        // <1>
+        for (let person of res.data) {
+          this.persons.push(person);
+        }
+
+        if (!res.data) {
+          this.hasMore = false;
+        }
+        this.isLoading = false;
+      });
+----
+
+TIP: The promise resolves with the `res` object, which contains the query results (list of persons in this case) in the `data` field of the payload.
+
+<1> We have also changed the `angular.ForEach` implementation with the `ES6` `for ... of` loop syntax. Additionally, we have also used `this` to reference the service properties in the class.
+
+The completed class-based representation of the `loadContacts()` function will be like so:
+
+.loadContacts() class-based implementation
+[source,javascript]
+----
+loadContacts() {
+  if (this.hasMore && !this.isLoading) {
+    this.isLoading = true;
+
+    let params = {
+      _page: this.page,
+      _sort: this.sorting,
+      _order: this.ordering,
+      q: this.search
+    };
+
+    this.Contact.query(params).then((res) => {
+      console.debug(res);
+      for (let person of res.data) {
+        this.persons.push(person);
+      }
+
+      if (!res.data) {
+        this.hasMore = false;
+      }
+      this.isLoading = false;
+    });
+  }
+}
+----
+
+==== updateContact
+
+Consider the `updateContact()` function:
+
+[source,javascript]
+----
+updateContact: function(person) {
+  var d = $q.defer();
+  self.isSaving = true;
+  person.$update().then(function() {
+    self.isSaving = false;
+    toaster.pop("success", "Updated " + person.name);
+    d.resolve();
+  });
+  return d.promise;
+}
+----
+
+`$q` is an AngularJS service to handle asynchronous functionality. We can replace this with the `Promise` module, which is natively supported in modern Javascript like so:
+
+[source,javascript]
+----
+updateContact(person) {
+  return new Promise((resolve, reject) => {
+    this.isSaving = true;
+    this.Contact.update(person).then(() => {
+      this.isSaving = false;
+      this.toaster.pop("success", "Updated " + person.name);
+      resolve();
+    })
+  })
+}
+----
+
+* The `updateContact` function will accept a `person` to be updated as arguments, and return a `Promise` object.
+
+* The body of the `Promise` will execute immediately, setting the `isSaving` flag to `true` and calling the `Contact.update` service to persist the update to the server.
+
+* Upon completion of the `Contact.update` method (which is promise-based as well!), we call `resolve()` to notify the completion of the `updateContact` function.
+
+TIP: You can checkout my tutorial on https://codecraft.tv/courses/angular/es6-typescript/promises/[ES6 Javascript & Typescript] to learn all about the modern Javascript `Promise` module .
+
+We can follow a similar approach to migrate the remaining functions to our new class-based implementation. Once this is done, We can completely get rid of the older implementation of the `contact.service.ts` with our brand-new `ES6` class-based contact service and register it via:
+
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .service("ContactService", ContactService);
+----
+
+== Verification
+
+Once the refactoring is complete, run the application on your `localhost` and verify that all the functionality works as expected. If you run into any snags, check the browser console to identify the source of the error and proceed with the debugging process.
+
+TIP: Use the `step-6` branch of the `angularjs-migration` repository to verify your code after the function migration.
+
+Finally. note that you do not have to be restricted to what is covered in this lecture. By all means, go through your application code and see how you can improve it further using the latest language constructs and tools available in the AngularJS eco-system.

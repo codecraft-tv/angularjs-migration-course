@@ -1,0 +1,103 @@
+= Upgrade Toaster Module
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+During the migration of the `ContactService` entity from AngularJS to Angular, we made the decision to ignore the `toaster` module and handle its migration separately. In this lecture we are going to figure out how to add this back in to our application. So lets get started!
+
+=== The problem of third-party modules
+One of the most common issues faced during the migration from AngularJS to Angular, is the conversion of third-party AngularJS modules. In my opinion, there are three options to handle this problem:
+
+1. *Re-write* - Rewrite your AngularJS module in Angular. More often than not, rewriting a module can be a lot simpler than you think!
+
+2. *Find an Angular version* - Angular has been around for awhile now. It is likely that your third-party library already has an Angular port out there.
+
+3. *Upgrade temporarily* - Although in this course we have decided to always downgrade entities to maintain compatibility, there is also the option to _upgrade_ our AngularJS components. We can do this temporarily to our third party modules until all its dependent components are converted to Angular. (In which case we can look at option 1 or 2 to replace the module with an Angular equivalent)
+
+To demonstrate option 3, consider our application state at this point:
+
+[#img-component-diagram]
+.Contacts application component diagram
+image::29-img-003.jpg[]
+
+We have a pure Angular `Resource` entity and a downgraded `Service` entity that is still being used by AngularJS components. However, what we could have also done is keep the `Resource` entity in `AngularJS` and upgrade it to maintain compatibility like so:
+
+[#img-component-diagram]
+.Contacts application component diagram
+image::30-img-001.jpg[]
+
+This will allow our `Resource` entity (still in AngularJS) to work inside Angular!
+
+=== Upgrading the Toaster module
+
+Lets go ahead and create a file called `ajs-upgraded-providers.ts` in our `src/app` directory with the following code:
+
+NOTE: The `ajs-upgraded-providers.ts` file will hold all our `provider` definitions used to upgrade AngularJS services
+
+[source, javascript]
+----
+// <1>
+import {InjectionToken} from "@angular/core";
+
+export const Toaster = new InjectionToken("Toaster");
+
+// <2>
+export function toasterServiceFactory(i: any) {
+  return i.get('toaster');
+}
+
+// <3>
+export const toasterServiceProvider = {
+  provide: Toaster,
+  useFactory: toasterServiceFactory,
+  deps: ['$injector']
+};
+----
+
+The purpose of the above code is to make our AngularJS `toaster` service available to our modern Angular Dependency Injection Framework.
+
+<1> The `InjectionToken` creates a token that can be used in a `DI` provider. More information on this can be found in my https://codecraft.tv/courses/angular/dependency-injection-and-providers/tokens/[Angular course].
+
+<2> The `toasterServiceFactory` returns the AngularJS toaster service from the AngularJS Injection Framework.
+
+<3> The configuration object specifies what to return for the `Toaster` token. This will call the specified factory function in `useFactory` using the `$injector` dependency.
+
+Finally, to use this in our application, update the `ngModule` `providers` array like so:
+
+[source, javascript]
+----
+@NgModule({
+  imports: [
+    BrowserModule,
+    UpgradeModule,
+    HttpClientModule
+  ],
+  providers: [
+    Contact,
+    ContactService,
+    toasterServiceProvider
+  ]
+})
+----
+
+This completes the upgrade of our AngularJS `toaster` module and makes it available to both AngularJS and Angular components within our application.
+
+=== Re-adding the toaster module to the Contact Service
+We can now re-add the `toaster` module to our `contact.service.ts` entity.
+
+Import the `Toaster` module from our `ajs-providers.ts` and inject it to our `ContactService` class like so:
+
+[source, javascript]
+----
+import { Toaster } from "../ajs-upgraded-providers";
+...
+export class ContactService {
+...
+  constructor(@Inject(Contact) private contact: Contact,
+                @Inject(Toaster) private toaster) {
+                ...
+----
+
+NOTE: Remember to uncomment the previously commented usages of the the `toaster` variable to ensure that everything works as expected.
+
+To verify the `toaster` is back in action, re-build and test the functionality of the application. If you run into any snags, just compare your code against the `step-8` branch of the `angularjs-migration` repository, which contains the completed code for this step.

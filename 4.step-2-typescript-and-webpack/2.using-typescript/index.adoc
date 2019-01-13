@@ -1,0 +1,58 @@
+= Typescript & Webpack
+:toc:
+:toclevels: 5
+
+Welcome to step 2 of our AngularJS migration process. In this lecture we are going to convert our AngularJS application to use `Typescript`, and also look at adding a few build tools to our application. So lets get started!
+
+== Why Typescript?
+Modern Angular is built using `Typescript` which is the recommended language to build Angular applications with. `Typescript` provides great tooling options, better code readability and brings most of the usefulness of a good statically-typed language to the `Javascript` ecosystem.
+
+Converting your `AngularJS` applications to `Typescript` early on can save you a lot of trouble later on in the migration process. Also, an AngularJS application written in `Typescript` is just a more pleasant experience overall!
+
+TIP: New to Typescript? Don't worry, we got you covered. Checkout my https://codecraft.tv/courses/angular/es6-typescript/1/#[free resource] to get you up to speed on Modern Javascript and Typescript to build Angular applications!
+
+== Converting to Typescript
+
+=== Step 1 - .js to .ts
+`Typescript` is just a superset of `Javascript`. Therefore, we can change any `.js` file to `.ts` and expect it to work without any problems.
+
+Lets go through all the Javascript files in our AngularJS application and change the `.js` extensions to `.ts`. For example, the `person-create.controller.js` file (src/app/controllers/) should be renamed as `person-create.controller.ts`
+
+Done? Good. All files in your AngularJS application should now have the `.ts` extension.
+
+=== Step 2 - Module Loading
+One of the features in `Typescript` that we want to take advantage of is `Module Loading`. If you need a refresher on `Modules` in `ES6` and `Typescript`, a refresher can be found https://codecraft.tv/courses/angular/es6-typescript/modules/[here].
+
+To facilitate Module Loading in our AngularJS application, we need an `index.ts`
+file to roll-up exports from several modules into a single convenience module. Lets go ahead and create one for each `controllers`, `directives`, `filters`, `services` folder and import all the modules within the folder like so:
+
+.src/app/controllers/index.ts
+[source,javascript]
+....
+import "./person-create.controller";
+import "./person-edit.controller";
+import "./person-list.controller";
+import "./search.controller";
+....
+
+.src/app/directives/index.ts
+[source,javascript]
+....
+import "./card.directive";
+import "./spinner.directive";
+....
+
+.src/app/filters/index.ts
+[source,javascript]
+....
+import "./default-image.filter";
+....
+
+.src/app/services.index.ts
+[source,javascript]
+....
+import "./contact.service";
+import "./contact.resource";
+....
+
+With this, we have now completed the conversion to Typescript and have also included relative module imports using `index.ts` files, which will come in useful when we integrate build tooling into our application.

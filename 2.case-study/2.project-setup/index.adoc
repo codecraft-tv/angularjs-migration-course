@@ -1,0 +1,76 @@
+= Project Setup
+:imagesdir: images/
+
+In this lecture we will go through the steps of setting up our project and initializing it to run on your `localhost`. So lets get started!
+
+== Prerequisites
+* Latest stable version of Node
+* NPM package manager
+
+== Cloning the Project
+
+*Step 1:* Clone the angularjs-migration project to an accessible location in your local computer using the following command:
+
+ git clone https://github.com/jawache/angularjs-migration.git
+
+*Step 2:* Navigate into the `angularjs-migration` workspace and verify the cloned repository has the following set of files and folders:
+
+ cd angularjs-migration
+
+ ls -alt
+
+ .git
+ src
+ .
+ bower.json
+ .bowerrc
+ data
+ .gitignore
+ package.json
+ .prettierrc
+ README.md
+ ..
+
+*Step 3:* Once the verification is successful, open the project in your favorite editor and you are good to go!
+
+== Dependencies
+
+Now lets sort out the project dependencies. Open a terminal, navigate into the `angularjs-migration` project folder, and follow the steps shown below:
+
+*Step 1:* To install the `npm` dependencies from the `package.json` file:
+
+ npm install
+
+*Step 2:* To install all required `bower` modules for the project, run the `setup` script specified in the `package.json` file like so:
+
+ npm run setup
+
+== Setting up the Server
+Our application requires a back-end to serve its data. We will be using a tool called `json-server` which will simulate a backend REST service using the `JSON` file located within the `data` folder of our cloned project.
+
+*Step 1:* To set up the server:
+
+ npm run server
+
+*Step 2:* Verify the server is up by visiting the following URL from your browser:
+
+ localhost:3000/contacts
+
+If you see a JSON object containing contact information in your browser, all is well and your server is up and running on port 3000!
+
+[IMPORTANT]
+====
+If you are on Windows and using the DOS shell, the server command in the `package.json` file has to be changed to the following:
+
+``"server": "copy .\\data\\orig-db.json .\\data\\db.json && json-server --watch .\\data\\db.json"``
+====
+
+== Initializing your Application
+
+Open a new terminal at the root of the cloned project and type in the following command:
+
+ npm start
+
+The contacts application should now be running on port 5000 of your local machine, accessible via the following URL:
+
+ http://localhost:5000

@@ -1,0 +1,57 @@
+= Deal with Upgraded Providers
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+The `ajs-upgraded-providers.ts` file contains AngularJS `providers` which we temporarily upgraded in our migration process to maintain compatibility with Angular entities. In this lecture, we will look at these upgraded providers and see how we can replace them with Angular friendly solutions, so that we can completely remove AngularJS from our application.
+
+== Upgraded providers
+
+The `ajs-upgraded-providers.ts` file contains the following upgraded providers:
+
+1. Toaster module
+2. UI-Router `$state` service
+3. UI-Router `$stateParams` service
+
+=== UI-Router
+The `UI-Router` will be replaced by Angular's in-built routing module during our migration process. Therefore, we do not have to do any changes to our current UI-Router implementation.
+
+=== Toaster module
+We can replace the existing AngularJS toaster with the `angular2-toaster` module. For now we will just add this into our application in preparation for the next step of the migration.
+
+To add this dependency to our application and the `package.json` file, execute the following command:
+
+----
+npm install angular2-toaster --save
+----
+
+Next, lets add in the `angular2-toaster` module to our `NgModule` like so:
+
+[source, javascript]
+----
+...
+import {ToasterModule, ToasterService} from `angular2-toaster`;
+...
+@NgModule({
+  imports: [
+    ...
+  ],
+  providers: [
+    Contact,
+    ContactService,
+    toasterServiceProvider,
+    uiRouterStateProvider,
+    uiRouterStateParamsProvider,
+    ToasterService
+  ],
+  declarations: [
+    ...
+  ],
+  entryComponents: [
+    ...
+  ]
+})
+...
+----
+
+To ensure that our changes have not broken anything, re-build and run the application on `localhost` for verification.

@@ -1,0 +1,284 @@
+= Migrate SpinnerComponent
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+In this lecture we are going to take a look at the `spinner` component, understand its usage in our application and finally implement it in Angular. So lets get started!
+
+=== What is the Spinner?
+The `spinner` component is exactly what it sounds like! It is a circular activity indicator with the text "Loading..." that is displayed when data is requested or loaded by the application. (See Figure 1 for reference)
+
+[#img-component-diagram]
+.Spinner activity indicator
+image::34-img-001.png[]
+
+=== The AngularJS implementation
+Now that we know what the `spinner` is, lets see how it has been implemented in our AngularJS Contacts application.
+
+==== Implementation
+The code for our `spinner` component (`cc-spinner`) resides in the `spinner.component.ts` file:
+
+.spinner.component.ts
+[source, javascript]
+----
+import * as angular from 'angular';
+
+export let SpinnerComponent = {
+  selector: 'ccSpinner',
+  template: `
+    <div class="spinner" ng-show="$ctrl.isLoading">
+      <span us-spinner="{radius:8, width:5, length: 3, lines:9}"></span>
+      <p>{{ $ctrl.message }}</p>
+    </div>
+`,
+  bindings: {
+    'isLoading': '=',
+    'message': '@'
+  },
+  controller: class SpinnerController {
+  }
+};
+
+angular
+    .module('codecraft')
+    .component(SpinnerComponent.selector, SpinnerComponent);
+----
+
+If you observe this code closely, you may notice that our implementation actually relies on the `us-spinner` third-party directive to provide the required functionality.
+
+The `us-spinner` directive (https://github.com/urish/angular-spinner[source]) is based on a vanilla javascript spinning activity indicator called `spin.js`. We will see how we can use this same library (`spin.js`) to re-implement the `spinner` component in Angular.
+
+==== Usage
+The `spinner` component is used in the `person-list.component.ts` file like so:
+
+[source, javascript]
+----
+<cc-spinner is-loading="$ctrl.contacts.isLoading" message="Loading..." ></cc-spinner >
+----
+
+The component displays a message (passed in via the `message` attribute) based on the state of the `is-loading` attribute.
+
+=== Converting our Spinner to Angular
+Lets go ahead and convert the `spinner.component.ts` file into a class-based Angular implementation like we have done with our previous components.
+
+==== Creating the SpinnerComponent class
+* Take the code from the `controller` property and move it to a separate `SpinnerComponent` class.
+
+* Include the `bindings` properties, `isLoading` and `message` as public variables using the `@Input` decorator. These will be input properties to our spinner component.
+
+* Then, add the `@Component` decorator  to this newly created `SpinnerComponent` class using the `selector` and `template` properties.
+
+Your `spinner.component.ts` file should now look like so:
+
+[source, javascript]
+----
+import * as angular from 'angular';
+import { Input, Component } from "@angular/core";
+
+@Component({
+  selector: 'ccSpinner',
+  template: `
+    <div class="spinner"
+     ng-show="$ctrl.isLoading">
+      <span us-spinner="{radius:8, width:5, length: 3, lines:9}"></span>
+      <p>{{ $ctrl.message }}</p>
+    </div>
+`
+})
+
+export class SpinnerComponent implements AfterViewInit {
+  @Input() public isLoading: boolean;
+  @Input() public message: string;
+}
+
+angular
+    .module('codecraft')
+    .component(SpinnerComponent.selector, SpinnerComponent);
+----
+
+Next, add this newly created `SpinnerComponent` to the `declarations` and `entryComponents` properties of the `NgModule` like so:
+
+[source, javascript]
+----
+...
+import { SpinnerComponent } from "./components/spinner.component";
+...
+
+@NgModule({
+  imports: [
+    ...
+  ],
+  providers: [
+    ...
+  ],
+  declarations: [
+    SearchComponent,
+    DefaultImagePipe,
+    CardComponent,
+    SpinnerComponent
+  ],
+  entryComponents: [
+    SearchComponent,
+    CardComponent,
+    SpinnerComponent
+  ]
+})
+...
+----
+
+==== Modifying the template code
+Consider the template code of our `spinner` component:
+
+[source, html]
+----
+<div class="spinner"
+ ng-show="$ctrl.isLoading">
+  <span us-spinner="{radius:8, width:5, length: 3, lines:9}"></span>
+  <p>{{ $ctrl.message }}</p>
+</div>
+----
+
+The above template code still uses AngularJS syntax, which can be converted to a more modern, Angular syntax as follows:
+
+* Remove all usages of `$ctrl.` For example,
+----
+$ctrl.message
+----
+
+should be modified as:
+----
+message
+----
+
+* Replace the `ng-show` AngularJS directive with the `hidden` property like so:
+
+[source, html]
+----
+<div class="spinner"
+ [hidden]="!isLoading">
+  <span us-spinner="{radius:8, width:5, length: 3, lines:9}"></span>
+  <p>{{ message }}</p>
+</div>
+----
+
+* Finally, remove the `us-spinner` attribute and add a `template reference` variable to the `span` tag. This reference will allow us to access this specific `span` element, and place our spinner component inside once it is implemented.
+
+[source, html]
+----
+<div class="spinner"
+ [hidden]="!isLoading">
+  <span #spinnerEl></span>
+  <p>{{ message }}</p>
+</div>
+----
+
+==== Implementing the Spinner
+
+===== @ViewChild decorator
+Now that we have the `spinnerEl` reference to attach our `spinner` component to, lets link this with our `SpinnerComponent`. We can do this using the `@ViewChild` decorator in Angular that allows us to access `DOM` elements like so:
+
+[source, javascript]
+----
+...
+import { Input, Component, ViewChild, ElementRef } from "@angular/core";
+...
+export class SpinnerComponent {
+  @Input() public isLoading: boolean;
+  @Input() public message: string;
+
+  @ViewChild('spinnerEl')
+  private spinnerEl: ElementRef:
+}
+...
+----
+
+The private `spinnerEl` variable will now reference the `span` element with the `#spinnerEl` reference variable.
+
+===== Adding spin.js
+Now we need to add the `spin.js` library to our application, which will allow us to implement the required spinner functionality. Execute the following command to install and add the library to our `package.json` file:
+----
+npm install spin.js --save
+----
+
+To use this in our `spinner.component.ts` file, add the following import:
+[source, javascript]
+----
+import {Spinner} from 'spin.js';
+----
+
+===== Implementation
+The spinner functionality can be easily implemented using our `spin.js` library like so:
+
+[source, javascript]
+----
+let spinner = new Spinner({radius: 8, width: 5, length: 3, lines: 9});
+spinner.spin(this.spinnerEl.nativeElement)
+----
+
+The above code creates a new instance of `Spinner`, which then uses its `spin` function to attach itself to the `DOM` element that is passed as an argument.
+
+To ensure that our `spinner` logic is always executed _after_ our component's view is fully initialized, we can implement the `AfterViewInit` life-cycle hook in our `SpinnerComponent` class and add the above code to its `ngAfterViewInit` function like so:
+
+[source, javascript]
+----
+...
+import { Input, Component, ViewChild, ElementRef, AfterViewInit } from "@angular/core";
+...
+export class SpinnerComponent implements AfterViewInit {
+  @Input() public isLoading: boolean;
+  @Input() public message: string;
+
+  @ViewChild('spinnerEl')
+  private spinnerEl: ElementRef;
+
+  ngAfterViewInit() {
+    let spinner = new Spinner({radius: 8, width: 5, length: 3, lines: 9});
+    spinner.spin(this.spinnerEl.nativeElement)
+  }
+}
+...
+----
+
+=== Downgrading our component
+For our `spinner` component to work inside an AngularJS entity, we need to downgrade it. To downgrade, add the following imports and modify the component registration code in `spinner.component.ts` like so:
+
+.Required imports
+[source, javascript]
+----
+import { downgradeComponent } from "@angular/upgrade/static";
+----
+
+.Modified component registration code
+[source, javascript]
+----
+angular
+  .module("codecraft")
+  .directive('ccSpinner', downgradeComponent({
+    component: SpinnerComponent,
+    inputs: ['isLoading', 'message']
+  }));
+----
+
+Notice how we have included both the `isLoading` and `message` properties, which our `SpinnerComponent` takes as an input.
+
+There is one last thing we need to do before we can complete the implementation of our `spinner` component. If you remember from our `card` component, components accepting input parameters are required to follow Angular syntax when inputting attributes. Since our `spinner` component receives input parameters, we have to re-write the component's attribute input syntax in Angular.
+
+Therefore, change the following code in the `person-list.component.ts`:
+[source, javascript]
+----
+<cc-spinner is-loading="$ctrl.contacts.isLoading"
+	            message="Loading..." ></cc-spinner >
+----
+
+to:
+[source, javascript]
+----
+<cc-spinner [is-loading]="contacts.isLoading"
+	            [message]="'Loading...'" ></cc-spinner>
+----
+
+NOTE: Notice that although we follow the square-bracket syntax for our input parameters, we still use `kebab-case` syntax for the `is-loading` attribute name. This is an AngularJS requirement, even though we are using a downgraded Angular component.
+
+With this, we complete the implementation of the `spinner` component in Angular! Rebuild and run the application on `localhost` to verify that everything works as expected.
+
+TIP: You can set `[is-loading]="true"` to easily verify the functionality of the  `spinner` component.

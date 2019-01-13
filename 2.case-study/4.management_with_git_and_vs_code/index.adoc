@@ -1,0 +1,41 @@
+= Code Management with Git
+:imagesdir: images/
+
+In this lecture we are going to take a look at how you can effectively use the `git` branches of the `angularjs-migration` repository, to keep track of the source code as we make our way through the migration process.
+
+== Starting a step
+This course will follow a *10-step plan* to migrate our contacts application to Angular. The starting source code for any given step will be available in its corresponding branch. For example, the starting code for step-1 will be available in the `step-1` branch of the `angularjs-migration` repository.
+
+You can checkout this source code like so:
+
+ git checkout step-1
+
+== Completing a step
+Once you have completed a step, your code should look similar to the code in the branch of the following step. For example, lets say you complete step-1. You can now checkout the `step-2` branch and compare it against yours. Ideally, they should both be the same.
+
+TIP: If you are using an IDE, it will most likely have functionality integrated to easily compare your code with another `git` branch. For example, in `vs-code` you can do this via the plugin `Git Lens`.
+
+NOTE: The completed code for `step-10` is be available in the `finished` branch
+
+== To save or not to save?
+Now that you are ready to move on to the next step, you have to decide what you want to do with the changes you have made on top of the `step-1` branch during.. well, step 1.
+
+1. If you don't care about the changes, you can just revert everything back and checkout `step-2`:
+
+ git checkout step-2
+
+2. However, if you do care about the changes, you can "stash away" the modifications in `step-1` and proceed by checking out `step-2`:
+
+ git stash
+
+ git checkout step-2
+
+
+I recommend you follow this same procedure throughout all the 10 steps of this lecture series.
+
+== In summary..
+
+* Checkout the relevant branch for the step before starting on it.
+* Code along with me on top of it as you make your way through the lectures.
+* If something is wrong, compare your code against the completed branch (which is the next step) to see where the mistake is.
+* Once you have completed a step, stash or revert your changes and move on to the next step!

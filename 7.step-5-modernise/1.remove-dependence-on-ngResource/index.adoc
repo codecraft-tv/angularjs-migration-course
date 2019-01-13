@@ -1,0 +1,109 @@
+= Remove dependence on ngResource
+:toc:
+:toclevels: 5
+
+Step 5 of the migration process is all about "modernizing" our AngularJS application by leveraging modern language constructs that is available to us through the adoption of Typescript. We have already done this up to an extent when we converted our controllers and directives into components. In this section, we will extend those ideas across the entire application and rewrite our code using modern language constructs. So lets get started!
+
+=== The ngResource module
+
+The AngularJS `ngResource` module provides easy interactions with RESTful server-side data resources via the `$resource` service. However, modern Angular does not have an equivalent to this `$resource` service.
+
+In this lecture, we will look at how we can remove the `ngResource` dependence and replace it with the much more general purpose, and Angular friendly `$http` service, all in a brand new `ES6` class!
+
+TIP: `$resource` is a higher level of abstraction specialized in RESTful APIs, that eliminates the need to interact with the low level `$http` service.
+
+=== contact.resource.ts
+
+The `contact.resource.ts` file contains the `ngResource` module implementation for our contacts application, which provides the `query`, `get`, `save`, `update`, and `remove` functionalities to our application.
+
+.contact.resource.ts
+[source,javascript]
+----
+import * as angular from 'angular';
+
+angular.module("codecraft").factory("Contact", function($resource) {
+  return $resource(
+    "http://localhost:3000/contacts/:id",
+    {id: "@id"},
+    {
+      update: {
+        method: "PUT"
+      }
+    }
+  );
+});
+----
+
+To begin with, lets add the following skeleton `class` to the `contact.resource.ts` file which we will use to implement our `$http` based communication service:
+
+[source,javascript]
+----
+export class Contact {
+
+  private apiRoot: string = "http://localhost:3000/contacts";
+  private $http;
+
+  constructor($http) {
+    this.$http = $http;
+  }
+}
+----
+
+TIP: The `$http` service will be automatically injected in by `AngularJS`, similar to how the `$resource` service was being injected in, in our previous implementation.
+
+=== The $http service
+
+The `$http` service is a core AngularJS service that facilitates communication with HTTP servers via the browser. The `query`, `get`, `save`, `update`, and `remove` functionalities previously provided by the `$resource` service can now be implemented like so:
+
+[source,javascript]
+----
+export class Contact {
+
+  private apiRoot: string = "http://localhost:3000/contacts";
+  private $http;
+
+  constructor($http) {
+    this.$http = $http;
+  }
+
+  query(params: { string: string }) {
+    return this.$http.get(this.apiRoot, { params });
+  }
+
+  get(id, params?: { string: string }) {
+    return this.$http.get(this.apiRoot + '/' + id, { params });
+  }
+
+  save(data: any) {
+    return this.$http.post(this.apiRoot, data);
+  }
+
+  update(data: any) {
+    return this.$http.put(this.apiRoot + '/' + data.id, data);
+  }
+
+  remove(data: any) {
+    return this.$http.delete(this.apiRoot + '/' + data.id);
+  }
+}
+----
+
+Lets understand this implementation:
+
+* Each function, uses the `$http` service instantiated in our `Contact` class contructor to interact with the API.
+
+* The `get`, `post`, `put`, and `delete` shortcut methods of the `$http` service have been used to implement the `query`, `get`, `save`, `update`, and `remove` functionalities.
+
+* The shortcut methods require passing in the URL and request data must be passed in for `post` and `put` requests. An optional config can be passed as the last argument.
+
+* The `apiRoot` variable holds the base URL string for the endpoint in question.
+
+We can now completely remove the `ngResource` implementation from the `contact.resource.ts` and add the following code to register our brand-new `ES6` class-based contact resource:
+
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .service("Contact", Contact);
+
+----

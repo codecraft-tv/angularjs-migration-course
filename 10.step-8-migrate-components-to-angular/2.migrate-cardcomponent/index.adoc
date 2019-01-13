@@ -1,0 +1,442 @@
+= Migrate CardComponent
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+In the previous lecture, we migrated our `search` component to Angular. In this lecture we are going to do the same with the `card` component. In doing so, we will see how to convert AngularJS `filters` to Angular `pipes`, and handle third-party library migration by using an equivalent library in Angular. Lets get started!
+
+=== Component visualization
+With the migration of our `Services` and the `Search` component to Angular, our application component diagram now looks like this:
+
+[#img-component-diagram]
+.Current contacts application component diagram
+image::33-img-001.jpg[]
+
+Once we complete the migration of the `card` component, our application will have the following component visualization:
+
+[#img-component-diagram]
+.Contacts application component diagram after the Search component migration
+image::33-img-002.jpg[]
+
+=== Creating the CardComponent class
+The `card` component code is contained within the `card.component.ts` file which is as follows:
+
+.card.component.ts
+[source, javascript]
+----
+import * as angular from 'angular';
+
+let CardComponent = {
+  selector: "ccCard",
+  template: `
+<div class="col-md-6">
+  <div class="well well-sm">
+    <div class="row">
+      <div class="col-md-4">
+        <img ng-src="{{ $ctrl.user.photo | defaultImage  }}"
+             alt=""
+             class="img-rounded img-responsive" />
+      </div>
+      <div class="col-md-8">
+        <h4>{{ $ctrl.user.name }}
+          <i class="fa"
+             ng-class="{'fa-female':$ctrl.user.sex == 'F', 'fa-male': $ctrl.user.sex == 'M'}"></i>
+        </h4>
+        <small>{{ $ctrl.user.city }}, {{ $ctrl.user.country }}
+          <i class="fa fa-map-marker"></i>
+        </small>
+        <p>
+          <i class="fa fa-envelope-o"></i>
+          {{ $ctrl.user.email }}
+          <br />
+          <i class="fa fa-gift"></i>
+          {{ $ctrl.user.birthdate | date:"longDate"}}
+        </p>
+
+
+        <a class="btn btn-default btn-sm"
+           ui-sref="edit({email:$ctrl.user.email})">
+          <i class="fa fa-pencil"></i>
+          &nbsp;Edit
+        </a>
+
+        <a class="btn btn-danger btn-sm"
+           ladda="$ctrl.isDeleting"
+           ng-click="$ctrl.deleteUser()">
+          <i class="fa fa-trash"></i>
+          &nbsp;Delete
+        </a>
+
+      </div>
+    </div>
+  </div>
+</div>
+  `,
+  bindings: {
+    user: "="
+  },
+  controller: class CardController {
+    private contacts;
+    private isDeleting;
+    private user;
+
+    constructor(ContactService) {
+      this.contacts = ContactService;
+      this.isDeleting = false;
+    }
+
+    deleteUser() {
+      this.isDeleting = true;
+      this.contacts.removeContact(this.user).then(() => {
+        this.isDeleting = false;
+      })
+    }
+  }
+};
+
+angular
+  .module("codecraft")
+  .component(CardComponent.selector, CardComponent);
+----
+
+Lets convert this into a class-based Angular implementation.
+
+As we did in our previous lecture, take the code from the `controller` property and move it to a separate `CardComponent` class like so:
+
+[source, javascript]
+----
+...
+export class CardComponent {
+  protected isDeleting;
+  @Input() private user;
+
+  constructor( @Inject(ContactService) private contacts: ContactService) {
+    this.isDeleting = false;
+  }
+
+  deleteUser() {
+    this.isDeleting = true;
+    this.contacts.removeContact(this.user).then(() => {
+      this.isDeleting = false;
+    })
+  }
+}
+...
+----
+
+Notice that we have added the `user` variable from our `bindings` property to our class using the `@Input()` decorator. We have also injected the `ContactService` to our component, which is accessible via the `contacts` variable.
+
+Also make sure to add the following imports:
+
+[source, javascript]
+----
+import { Component, Input, Inject } from "@angular/core";
+import { ContactService } from "../services/contact.service";
+----
+
+Next, move the `selector` and `template` properties to the `@Component` decorator and add it to our `CardComponent` class like so:
+
+[source, javascript]
+----
+@Component({
+  selector: "ccCard",
+  template: `
+    <div class="col-md-6">
+      <div class="well well-sm">
+        <div class="row">
+          <div class="col-md-4">
+            <img ng-src="{{ $ctrl.user.photo | defaultImage  }}"
+                 alt=""
+                 class="img-rounded img-responsive" />
+          </div>
+          <div class="col-md-8">
+            <h4>{{ $ctrl.user.name }}
+              <i class="fa"
+                 ng-class="{'fa-female':$ctrl.user.sex == 'F', 'fa-male': $ctrl.user.sex == 'M'}"></i>
+            </h4>
+            <small>{{ $ctrl.user.city }}, {{ $ctrl.user.country }}
+              <i class="fa fa-map-marker"></i>
+            </small>
+            <p>
+              <i class="fa fa-envelope-o"></i>
+              {{ $ctrl.user.email }}
+              <br />
+              <i class="fa fa-gift"></i>
+              {{ $ctrl.user.birthdate | date:"longDate"}}
+            </p>
+
+
+            <a class="btn btn-default btn-sm"
+               ui-sref="edit({email:$ctrl.user.email})">
+              <i class="fa fa-pencil"></i>
+              &nbsp;Edit
+            </a>
+
+            <a class="btn btn-danger btn-sm"
+               ladda="$ctrl.isDeleting"
+               ng-click="$ctrl.deleteUser()">
+              <i class="fa fa-trash"></i>
+              &nbsp;Delete
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class CardComponent {
+  protected isDeleting;
+  @Input() private user;
+
+  constructor( @Inject(ContactService) private contacts: ContactService) {
+    this.isDeleting = false;
+  }
+
+  deleteUser() {
+    this.isDeleting = true;
+    this.contacts.removeContact(this.user).then(() => {
+      this.isDeleting = false;
+    })
+  }
+}
+----
+
+Finally, add this newly created `CardComponent` to the `NgModule`'s `declarations` and `entryComponents` array like so:
+
+[source, javascript]
+----
+...
+import { CardComponent } from "./components/card.component";
+...
+
+@NgModule({
+  imports: [
+  ...
+  ],
+  providers: [
+  ...
+  ],
+  declarations: [
+    SearchComponent,
+    CardComponent
+  ],
+  entryComponents: [
+    SearchComponent,
+    CardComponent
+  ]
+})
+...
+----
+
+NOTE: You only need to add a component to the `entryComponents` property if you plan to downgrade it.
+
+=== Modifying the template code
+The above template code in our `@Component` decorator still uses AngularJS syntax, which can be converted to a more modern, Angular syntax as follows:
+
+* Replace the `ng-class` attribute with `[ngClass]`.
+
+* Remove all usages of `$ctrl.` For example,
+----
+$ctrl.user.email
+----
+
+should be modified as:
+
+----
+user.email
+----
+
+* replace the `ui-sref` attribute:
+
+[source, javascript]
+----
+<a class="btn btn-default btn-sm" ui-sref="edit({email:$ctrl.user.email})">
+----
+
+with the following `[attr.href]` attribute as follows:
+
+[source, javascript]
+----
+<a class="btn btn-default btn-sm" [attr.href]="'#!/edit/' +  user.email">
+----
+
+=== Converting filters to pipes
+Our `card` component uses a custom AngularJS filter called `defaultImage`, which sets a default image in our `card` component if no values are passed into its filter function. The filter has the following implementation in AngularJS:
+
+.default-image.filter.ts
+[source, javascript]
+----
+import * as angular from 'angular';
+
+angular.module("codecraft").filter("defaultImage", function() {
+  return function(input, param) {
+    if (!param) {
+      param = "/img/avatar.png";
+    }
+    if (!input) {
+      return param;
+    }
+    return input;
+  };
+});
+----
+
+To use this in our Angular application, we will need to rewrite this as an Angular `pipe`.
+
+First, create a folder named `pipes` (in `src/app`) and create a file named `default-image.pipe.ts`. Then add the following code to this file:
+
+.default-image.pipe.ts
+[source, javascript]
+----
+import {Pipe, PipeTransform} from '@angular/core';
+
+@Pipe({name: 'defaultImage'})
+export class DefaultImagePipe implements PipeTransform {
+  transform(input, def) {
+    if (!def) {
+      def = "/img/avatar.png"
+    }
+    if (!input) {
+      return def
+    }
+    return input;
+  }
+}
+----
+
+Essentially, this code replicates the exact functionality our `defaultImage` filter provided in AngularJS via an Angular pipe.
+
+NOTE: We will not go into implementation details of `pipes` in this course. However, if you would like to dig in a bit deeper, feel free to check out my free Angular course which covers Angular `pipes` (and a lot more!) in great detail https://codecraft.tv/courses/angular/pipes/overview/[here].
+
+To use this in our application, add this to the `declarations` property of our `ngModule` in `main.ts` like so:
+
+[source, javascript]
+----
+...
+import { DefaultImagePipe } from "./pipes/default-image.pipe";
+...
+
+@NgModule({
+  imports: [
+  ...
+  ],
+  providers: [
+  ...
+  ],
+  declarations: [
+    SearchComponent,
+    CardComponent,
+    DefaultImagePipe
+  ],
+  entryComponents: [
+    SearchComponent,
+    CardComponent
+  ]
+})
+----
+
+NOTE: Since we don't need to downgrade our `pipe`, we do not have to add it to the `entryComponents` property
+
+=== Downgrading our component
+To downgrade, add the following imports and modify the component registration code in `card.component.ts` like so:
+
+.Required imports
+[source, javascript]
+----
+import { downgradeComponent } from "@angular/upgrade/static";
+----
+
+.Modified component registration code
+[source, javascript]
+----
+angular
+  .module('codecraft')
+  .directive("ccCard", downgradeComponent({
+    component: CardComponent,
+    inputs: ['user']
+}));
+----
+
+Notice how we have included the `user` property, which our `CardComponent` takes as an input.
+
+Finally, even though we have downgraded our `card` component, we need to modify the syntax of its usages to follow Angular syntax. This is only applicable for downgraded components used within AngularJS, *that have inputs or outputs specified in it.*
+
+Therefore, in the `person-list.compnent.ts` modify the following code
+[source, javascript]
+----
+<ccCard *ngFor="let person of contacts.persons" user="person" ></ccCard>
+----
+
+to:
+[source, javascript]
+----
+<ccCard *ngFor="let person of contacts.persons" [user]="person" ></ccCard>
+----
+
+=== Upgrading the ladda third-party module
+The `card` component uses a third party package called `ladda` to add a spinner effect to the `delete` button like so:
+
+[#img-component-diagram]
+.ladda spinner effect
+image::33-img-003.png[]
+
+The relevant code snippet of its usage is shown below:
+
+.ladda usage
+[source, javascript]
+----
+<a class="btn btn-danger btn-sm"
+   ladda="isDeleting"
+   (click)="deleteUser()">
+   <i class="fa fa-trash"></i>
+   &nbsp;Delete
+</a>
+----
+
+
+Lets see how we can convert this functionality to be compatible with Angular.
+
+As we discussed in a previous lecture, we have 3 options to handle a third-party dependency during a migration from AngularJS to Angular.
+
+1. *Re-write*
+2. *Find an Angular version*
+3. *Upgrade temporarily*
+
+Fortunately, the AngularJS `ladda` package has a compatible Angular version that we can use in our application. Execute the following command which will install and add the dependency to our `package.json` file:
+
+----
+npm install angular2-ladda --save
+----
+
+Next, add the `LaddaModule` as an import in the `NgModule` `imports` list like so:
+
+[source, javascript]
+----
+...
+import {LaddaModule} from "angular2-ladda";
+...
+@NgModule({
+  imports: [
+    BrowserModule,
+    UpgradeModule,
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule,
+    LaddaModule
+  ],
+  ...
+})
+...
+----
+
+Finally, modify the syntax used to add the `ladda` directive in the `card.component.ts` file's template code like so:
+
+[source, javascript]
+----
+[ladda]="isDeleting"
+----
+
+With this, we complete the migration of the `card` component from AngularJS to Angular! Rebuild and run the application on `localhost` to verify that everything works as expected.
+
+TIP: You can also set `[ladda]="true"` to easily verify the functionality of the `ladda` package!

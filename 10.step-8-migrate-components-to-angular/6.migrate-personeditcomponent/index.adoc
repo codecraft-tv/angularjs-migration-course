@@ -1,0 +1,252 @@
+= Migrate PersonEditComponent
+:toc:
+:toclevels: 5
+:imagesdir: images/
+
+In this final lecture for this section, we will be upgrading our `person-edit` component over to Angular, and then downgrading it to maintain compatibility in an AngularJS context. So lets get started!
+
+=== Converting our list component to Angular
+
+The code for our `person-edit` component is contained in the `person-edit.component.ts` file which is shown below:
+
+.person-list.component.ts
+[source, javascript]
+----
+import * as angular from 'angular';
+
+let PersonEditComponent = {
+  selector: "personEdit", // <person-edit>
+  template: `
+<div class="col-md-8 col-md-offset-2">
+  <form class="form-horizontal"
+        ng-submit="$ctrl.save()"
+        novalidate>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+
+        {{mode}}
+
+        <div class="pull-right">
+          <button class="btn btn-primary btn-sm"
+                  ladda="$ctrl.contacts.isSaving"
+                  type="submit">Save
+          </button>
+
+          <button class="btn btn-danger btn-sm"
+                  ladda="$ctrl.contacts.isDeleting"
+                  ng-click="$ctrl.remove()">Delete
+          </button>
+        </div>
+        <div class="clearfix"></div>
+
+      </div>
+      <div class="panel-body">
+
+        <ng-include src="'templates/form.html'"></ng-include>
+
+      </div>
+    </div>
+  </form>
+</div>
+  `,
+  bindings: {},
+  controller: class PersonEditController {
+
+    public person = {};
+    public contacts;
+
+    private $state;
+    private $stateParams;
+
+    constructor($stateParams, $state, ContactService) {
+      this.$stateParams = $stateParams;
+      this.$state = $state;
+      this.contacts = ContactService;
+      this.person = this.contacts.getPerson(this.$stateParams.email);
+    }
+
+    save() {
+      this.contacts.updateContact(this.person).then(() => {
+        this.$state.go("list");
+      });
+    };
+
+    remove() {
+      this.contacts.removeContact(this.person).then(() => {
+        this.$state.go("list");
+      });
+    };
+
+  }
+
+};
+
+angular
+  .module("codecraft")
+  .component(PersonEditComponent.selector, PersonEditComponent);
+----
+As usual, we will start off by converting this file into a class-based Angular implementation like we have done with our previous components.
+
+==== Creating the PersonCreateComponent class
+* Take the code from the `controller` property and move it to a separate `PersonEditComponent` class.
+
+* Manually inject the `ContactService`, `$state`, and the `$stateParams` using the `@Inject` decorator.
+
+* Include the `mode` parameter to the `PersonEditComponent` class. The template form uses this to distinguish between the `person-create` and `person-edit` components.
+
+* Then, add the `@Component` decorator  to this newly created `PersonCreateComponent` class using the `selector` and `template` properties. Replace the in-line template `HTML` with the path to the common template form we created during the `person-create` component migration.
+
+Your `person-edit.component.ts` file should now look like so:
+
+[source, javascript]
+----
+import * as angular from 'angular';
+
+import { Inject, Component } from "@angular/core";
+import { UIRouterState, UIRouterStateParams } from "../ajs-upgraded-providers";
+
+import { ContactService } from "../services/contact.service";
+
+@Component({
+  selector: "personEdit",
+  templateUrl: 'app/components/person-form.html'
+})
+export class PersonEditComponent {
+    public mode: string = 'Edit';
+    public person: any;
+
+    constructor(@Inject(UIRouterStateParams) private $stateParams,
+                @Inject(UIRouterState) private $state,
+                @Inject(ContactService) public contacts: ContactService) {
+      this.person = this.contacts.getPerson(this.$stateParams.email);
+    }
+
+    save() {
+      this.contacts.updateContact(this.person).then(() => {
+        this.$state.go("list");
+      });
+    };
+
+    remove() {
+      this.contacts.removeContact(this.person).then(() => {
+        this.$state.go("list");
+      });
+    };
+
+  }
+
+  angular
+    .module("codecraft")
+    .component(PersonEditComponent.selector, PersonEditComponent);
+----
+
+Next, add this newly created `PersonEditComponent` to the `declarations` and `entryComponents` properties of the `NgModule` like so:
+
+[source, javascript]
+----
+...
+import { PersonEditComponent } from "./components/person-edit.component";
+...
+
+@NgModule({
+  imports: [
+    ...
+  ],
+  providers: [
+    ...
+  ],
+  declarations: [
+    SearchComponent,
+    DefaultImagePipe,
+    CardComponent,
+    SpinnerComponent,
+    PersonListComponent,
+    PersonCreateComponent,
+    PersonEditComponent
+  ],
+  entryComponents: [
+    SearchComponent,
+    CardComponent,
+    SpinnerComponent,
+    PersonListComponent,
+    PersonCreateComponent,
+    PersonEditComponent
+  ]
+})
+...
+----
+
+=== The UI Router's $stateParams service
+
+Like we did with the `$state` service, we will need to temporarily upgrade the UI-Router `$stateParams` service, so that it can be used within our Angular component.
+
+To upgrade our component, add the following code to the `ajs-upgraded-providers.ts` file:
+
+[source, javascript]
+----
+...
+export const UIRouterStateParams = new InjectionToken("UIRouterStateParams");
+
+export function uiRouterStateParamsServiceFactory(i: any) {
+  return i.get('$stateParams');
+}
+export const uiRouterStateParamsProvider = {
+  provide: UIRouterStateParams,
+  useFactory: uiRouterStateParamsServiceFactory,
+  deps: ['$injector']
+};
+
+...
+----
+
+The behavior of the above code is exactly the same as that of our previous components.
+
+To ensure that we provide this within our application, add it to the list of `providers` in the `NgModule` like so:
+
+[source, javascript]
+----
+import { toasterServiceProvider, uiRouterStateProvider } from "./ajs-upgraded-providers";
+...
+@NgModule({
+  imports: [
+    ...
+  ],
+  providers: [
+    Contact,
+    ContactService,
+    toasterServiceProvider,
+    uiRouterStateProvider,
+    uiRouterStateParamsProvider
+  ],
+  declarations: [
+    ...
+  ],
+  entryComponents: [
+    ...
+  ]
+})
+...
+----
+
+=== Downgrading the Search component
+To maintain compatibility, we will need to downgrade our `PersonEditComponent`. There's nothing new here, just follow the same procedure like we have done before.
+
+In `person-edit.component.ts`, import the `downgradeComponent` function like so:
+
+[source, javascript]
+----
+import { downgradeComponent } from "@angular/upgrade/static";
+----
+
+and modify the component registration code like so:
+
+[source, javascript]
+----
+angular
+    .module('codecraft')
+    .directive("personEdit", downgradeComponent({
+        component: PersonEditComponent
+    }));
+----
+
+With this, we complete the migration of our `person-edit` component from AngularJS to Angular! Be sure to rebuild and run the application on `localhost` to verify that everything works as expected.
