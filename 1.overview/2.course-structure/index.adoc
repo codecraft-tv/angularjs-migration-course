@@ -31,6 +31,6 @@ Based on my experience delivering AngularJS to Angular migration workshops, one 
 
 
 == Alternative Migration Strategy
-The strategy that I will discuss here is not mandated by the Angular team but it is something that I have presented and talked about at many conferences, including the Angluar connect conference in London. It is a catch-all, bulletproof migration strategy that could work for you.
+The strategy that I will discuss here is not mandated by the Angular team but it is something that I have presented and talked about at many conferences, including the Angular connect conference in London. It is a catch-all, bulletproof migration strategy that could work for you.
 
 If everything fails and you are looking at a complete rewrite of your AngularJS application, this might just be what you are looking for.

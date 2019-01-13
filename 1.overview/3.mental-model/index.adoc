@@ -1,5 +1,4 @@
 = Mental Model
-:imagesdir: images/
 
 In this lecture we are going to cover a way of thinking or reasoning about the AngularJS migration process. We call this a _Mental Model_ and it is essential that you understand this concept to successfully migrate your AngularJS application.
 

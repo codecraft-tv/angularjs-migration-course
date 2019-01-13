@@ -6,10 +6,10 @@
   "5.step-3-move-to-latest-angularjs": "Step 3 - Move to the latest AngularJS",
   "6.step-4-componentify": "Step 4 - Componentify",
   "7.step-5-modernise": "Step 5 - Modernise",
-  "8.step-6-dual-booting": "Step 6 - Dual Booting",
-  "9.step-7-migrate-services-to-angular": "Step 7 - Migrate Services to Angular",
-  "10.step-8-migrate-components-to-angular": "Step 8 - Migrate Components to Angular",
-  "11.step-9-migrate-routing-to-angular": "Step 9 - Migrate Routing to Angular",
-  "12.step-10-remove-angularjs-and-cleanup": "Step 10 - Remove AngularJS and Cleanup",
+  "8.step-6-dual-booting-to-angular": "Step 6 - Dual Booting",
+  "9.step-7-migrate-services-to-angular": "Step 7 - Migrate Services",
+  "10.step-8-migrate-components-to-angular": "Step 8 - Migrate Components",
+  "11.step-9-migrate-routing-to-angular": "Step 9 - Migrate Routing",
+  "12.step-10-remove-angularjs-and-cleanup": "Step 10 - Remove AngularJS",
   "13.troubleshooting": "Troubleshooting"
 }
