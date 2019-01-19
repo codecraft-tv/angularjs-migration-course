@@ -21,3 +21,5 @@ A few tips to help you reap the full benefits of this course:
 
 
 Well then.. let's get started!
+
+include::{docdir}/content/courses/angularjs-migration/CONTRIBUTORS.adoc[]

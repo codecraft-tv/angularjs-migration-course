@@ -1,0 +1,3 @@
+== Contributors
+
+This book is open source (https://github.com/codecraft-tv/angularjs-migration-course) and maintained with the generous help of developers like you.
