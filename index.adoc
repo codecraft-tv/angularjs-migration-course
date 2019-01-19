@@ -4,7 +4,7 @@ course_path: courses/angularjs-migration/
 course_title: AngularJS Migration
 course_description: Learn how to migrate a legacy AngularJS (1.x) application to a more current version of Angular (2+).
 course_slug: angularjs-migration
-course_cover: /assets/images/courses/angularjs-migration/angularjs-migration.w555.playicon.noptim.jpg
+course_cover: /assets/images/courses/angularjs-migration/angularjs-migration.w550.playicon.noptim.jpg
 course_promo_video: //www.youtube.com/watch?v=WInpT3SMNag
 ---
 
