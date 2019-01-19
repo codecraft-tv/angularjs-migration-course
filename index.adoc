@@ -2,9 +2,29 @@
 layout: course-landing.hbs
 course_path: courses/angularjs-migration/
 course_title: AngularJS Migration
-course_description: Build the web applications of tomorrow using the new Angular web framework from Google.
+course_description: Learn how to migrate a legacy AngularJS (1.x) application to a more current version of Angular (2+).
 course_slug: angularjs-migration
-course_cover: /assets/images/courses/angular/angular.w555.playicon.noptim.jpg
-course_promo_video: //www.youtube.com/watch?v=PMkdiZU6kVc
-course_book: no
+course_cover: /assets/images/courses/angularjs-migration/angularjs-migration.w555.playicon.noptim.jpg
+course_promo_video: //www.youtube.com/watch?v=WInpT3SMNag
 ---
+
+In this practical migration course, we will cover topics such as:
+
+- How to migrate an `AngularJS` codebase using the official `ngUpgrade` module.
+- How to use modern tooling such as `TypeScript` & `WebPack` in your `AngularJS` app.
+- How to migrate routing, specifically we cover migrating from `uiRouter` in `AngularJS` to the built-in `Angular` router.
+
+But also we are going to cover some practical, real-life topics as well such as:
+
+- How to also migrate all those *3rd party modules* you're using in your AngularJS app.
+- We have a section where we troubleshoot common issues, which I've gathered from working with clients on *actual migration projects* and answering questions for students.
+- If all else fails, if the `ngUpgrade` approach doesn't work for you, then I'm also going to teach an alternative catch-all migration approach I developed and later presented at the Angular Connect conference in London called *iFrame Migration*.
+
+=== Course Components
+
+- Every migration is unique, so to keep you grounded I first teach a *mental model*, a way to think about migration.
+- I then teach my *10 step plan* for migration, this is a plan I developed and used successfully with some clients.
+- We then go through a *real case-study* and using the 10 step plan we migrate an application from AngularJS to Angular. 
+- All the code for the case study is *available online via GitHub* with a separate branch for each step. I recommend you code along with me all the way through; however If you get stuck, you can compare your code to the code on GitHub for that step to make sure you got everything right.
+- In the end, I cover some *bonus material* including a section on troubleshooting and a section on my alternative iframe migration strategy.
+
