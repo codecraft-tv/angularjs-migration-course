@@ -1,3 +1,7 @@
+ifndef::ebook[]
+include::{docdir}/content/courses/angularjs-migration/_includes/source-code.adoc[]
+endif::ebook[]
+
 = Converting Bower to NPM
 
 Before we can bundle our application together and convert it into Javascript, we need to handle our project dependencies. Currently, this is done using `bower`. In this lecture, we are going to look at how we can remove `bower` and replace it with `npm` as our dependency management tool. So lets get started!

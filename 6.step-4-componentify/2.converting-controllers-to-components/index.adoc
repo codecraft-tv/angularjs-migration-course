@@ -1,3 +1,7 @@
+ifndef::ebook[]
+include::{docdir}/content/courses/angularjs-migration/_includes/source-code.adoc[]
+endif::ebook[]
+
 = Controllers to components
 :toc:
 :toclevels: 5

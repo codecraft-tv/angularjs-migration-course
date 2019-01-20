@@ -1,0 +1,1 @@
+IMPORTANT: The source code for this course can be found on https://github.com/jawache/angularjs-migration/branches/all[GitHub, window="_blank"]. Each step has it's own branch, instructions for how to checkout the correct code for each step are in the link:/courses/angularjs-migration/case-study/project-setup/[Project Setup] lecture.
