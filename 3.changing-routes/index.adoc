@@ -1,0 +1,119 @@
+ifndef::ebook[]
+include::{docdir}/content/courses/angularjs-migration/_includes/source-code.adoc[]
+endif::ebook[]
+
+= Changing Routes
+:toc:
+:toclevels: 5
+
+With all our directives and controllers converted into components, lets now look at how we can fix the routes within our application!
+
+== Controller template files
+
+If you remember from our previous lecture, our controllers' template files are linked using separate routing configurations in the `app.routes.ts` file. With the controllers now being converted into components, these routing configurations need some modifications.
+
+The good news is, this is a lot simpler than it sounds.
+
+Consider the following routing configuration used to map the `PersonListController` to its corresponding template file:
+
+.PersonListController template mapping
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .config(function($stateProvider, $urlRouterProvider) {
+    $stateProvider
+      .state("list", {
+        url: "/",
+        views: {
+          main: {
+            templateUrl: "templates/list.html",
+            controller: "PersonListController"
+          },
+          ...
+        }
+      })
+      ...
+----
+
+Because our new components are like directives in AngularJS, all we need to do is replace the `templateUrl` and `controller` attributes with the `template` attribute and set its value to the `PersonListComponent` s selector in kebab-case.
+
+The updated routing configuration will look like so:
+
+.PersonListController updated template mapping
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .config(function($stateProvider, $urlRouterProvider) {
+    $stateProvider
+      .state("list", {
+        url: "/",
+        views: {
+          main: {
+            template: '<person-list></person-list>'
+          },
+          ...
+        }
+      })
+      ...
+----
+
+Similarly, change the remaining configurations so that the updated app.routes.ts file will look like so:
+
+.PersonListController updated template mapping
+[source,javascript]
+----
+angular
+  .module("codecraft")
+  .config(function($stateProvider, $urlRouterProvider) {
+    $stateProvider
+      .state("list", {
+        url: "/",
+        views: {
+          main: {
+            template: "<person-list></person-list>",
+          },
+          search: {
+            template: "<search></search>",
+          }
+        }
+      })
+      .state("edit", {
+        url: "/edit/:email",
+        views: {
+          main: {
+            template: "<person-edit></person-edit>",
+          }
+        }
+      })
+      .state("create", {
+        url: "/create",
+        views: {
+          main: {
+            template: "<person-create></person-create>",
+          }
+        }
+      });
+
+    $urlRouterProvider.otherwise("/");
+  });
+
+----
+
+Finally, to ensure that the components are accessible within our application, replace the following imports in `main.ts`:
+
+[source,javascript]
+----
+import './directives';
+import './controllers';
+----
+
+with
+
+[source,javascript]
+----
+import './components';
+----
+
+To verify everything is in order, re-build the project, load the application on your `localhost` and run a quick sanity test to ensure all the functionality works as expected!
