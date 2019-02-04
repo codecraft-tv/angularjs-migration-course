@@ -1,3 +1,6 @@
+---
+lecture_video: Y7TX4GTRIUU
+---
 = The Plan
 
 In this lecture we will briefly go over our _10 step plan_ on how to migrate an AngularJS application to Angular. In later lectures we wil go into each step in much more detail.

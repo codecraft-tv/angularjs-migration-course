@@ -1,3 +1,6 @@
+---
+lecture_video: RntQXdNnKww
+---
 = The application we are migrating
 
 In this lecture, we will briefly go through the application that we will be migrating from AngularJS to Angular.

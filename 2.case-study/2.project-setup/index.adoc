@@ -1,3 +1,6 @@
+---
+lecture_video: r2tOkTzX1gQ
+---
 :toc:
 = Project Setup
 

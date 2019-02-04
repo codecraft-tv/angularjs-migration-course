@@ -1,3 +1,6 @@
+---
+lecture_video: qeQljCLpR04
+---
 = Introduction
 
 Hello there, welcome to my lecture series on how to migrate your AngularJS application to Angular!

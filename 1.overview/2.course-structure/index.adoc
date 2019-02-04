@@ -1,3 +1,6 @@
+---
+lecture_video: Rp12o6KI2Z4
+---
 :toc:
 = Course Structure
 

@@ -1,3 +1,6 @@
+---
+lecture_video: kGt5piKeKXA
+---
 ifndef::ebook[]
 include::{docdir}/content/courses/angularjs-migration/_includes/source-code.adoc[]
 endif::ebook[]

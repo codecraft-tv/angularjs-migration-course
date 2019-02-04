@@ -1,3 +1,6 @@
+---
+lecture_video: 7OMEEYpKYuc
+---
 = Project Structure
 
 Hopefully at this point, you have the project set up successfully with a working contacts application up and running on your `localhost`. Let's now take a look at the project structure to understand how everything is organized.
