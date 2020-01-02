@@ -1,5 +1,5 @@
 ---
-lecture_video: OlXF8gRsK0M
+lecture_video: Xryqc7QjdbY
 ---
 ifndef::ebook[]
 include::{docdir}/content/courses/angularjs-migration/_includes/source-code.adoc[]

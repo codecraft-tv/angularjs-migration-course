@@ -1,5 +1,5 @@
 ---
-lecture_video: B3hyE2yqLc8
+lecture_video: S7hAwIU4R4k
 ---
 = Common Issues and Questions
 :toc:
