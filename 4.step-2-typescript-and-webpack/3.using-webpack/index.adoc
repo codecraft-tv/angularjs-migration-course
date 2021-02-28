@@ -96,7 +96,6 @@ module.exports = {
         ]
     }
 };
-}
 ----
 
 * `entry` - Specifies the entry point of the application for webpack to start bundling modules from.
