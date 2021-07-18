@@ -114,7 +114,7 @@ angular
 
 [#img-component-diagram]
 .Re-factored controllers folder
-image::11-img-001.png[]
+image::./images/11-img-001.png[]
 
 * *Step 5:* Go to the `index.html` file and replace the following code:
 
@@ -143,7 +143,7 @@ Follow the same procedure to breakdown the `directives`, `filters` and `services
 
 [#img-component-diagram]
 .Re-factored component file structure
-image::11-img-002.png[]
+image::./images/11-img-002.png[]
 
 
 == In summary..
